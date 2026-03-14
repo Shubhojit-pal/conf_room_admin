@@ -152,9 +152,6 @@ export default function RoomsPage() {
                         referrerPolicy="no-referrer"
                         crossOrigin="anonymous"
                         className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'https://via.placeholder.com/64x64?text=Room';
-                        }}
                       />
                     </div>
                   )}
