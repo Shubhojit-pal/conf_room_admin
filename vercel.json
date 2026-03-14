@@ -1,0 +1,7 @@
+{
+  "name": "crbs-frontend-admin",
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "installCommand": "npm ci --legacy-peer-deps",
+  "devCommand": "npm run dev"
+}
