@@ -14,6 +14,7 @@ export interface Room {
     availability: string;
     image_url?: string;
     image_urls?: string[];
+    mapLink?: string;
 }
 
 export interface Booking {

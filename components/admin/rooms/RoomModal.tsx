@@ -42,6 +42,7 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
         availability: 'available',
         image_url: '',
         image_urls: [] as string[],
+        mapLink: '',
     });
 
     useEffect(() => {
@@ -61,6 +62,7 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
                 availability: room.availability || 'available',
                 image_url: room.image_url || '',
                 image_urls: room.image_urls || (room.image_url ? [room.image_url] : []),
+                mapLink: room.mapLink || '',
             });
         }
     }, [room]);
@@ -277,6 +279,17 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
                                 placeholder="e.g. Block A, 5th Floor"
                             />
                         </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-foreground">Google Maps Location</label>
+                        <p className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full inline-block mb-1">Paste Google Maps Link</p>
+                        <input
+                            className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground"
+                            value={formData.mapLink}
+                            onChange={e => setFormData({ ...formData, mapLink: e.target.value })}
+                            placeholder="https://maps.google.com/?q=..."
+                        />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
