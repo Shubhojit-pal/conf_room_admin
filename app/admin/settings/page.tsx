@@ -1,11 +1,37 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Settings, Lock, Globe, Database } from 'lucide-react';
-
+import { Settings, Lock, Globe, Database, Volume2, VolumeX } from 'lucide-react';
+import { soundManager } from '@/lib/sound-manager';
+import { useUISound } from '@/hooks/use-ui-sound';
 export default function SettingsPage() {
+  const { playSuccess } = useUISound();
+  const [soundsEnabled, setSoundsEnabled] = useState(true);
+
+  useEffect(() => {
+    if (soundManager) {
+      setSoundsEnabled(soundManager.isEnabled());
+    }
+  }, []);
+
+  const toggleSounds = () => {
+    const newState = !soundsEnabled;
+    setSoundsEnabled(newState);
+    soundManager?.setEnabled(newState);
+    if (newState) {
+      soundManager?.play('click');
+    }
+  };
+
+  const handleSave = () => {
+    playSuccess();
+    // In a real app, this would call an API
+    alert('Settings saved successfully!');
+  };
+
   return (
     <div className="p-4 lg:p-6 space-y-6">
       <div>
@@ -20,6 +46,30 @@ export default function SettingsPage() {
           General Settings
         </h3>
         <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-muted/20 border border-border/40 rounded-xl mb-4 transition-all">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-lg ${soundsEnabled ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                {soundsEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Interactive Audio</p>
+                <p className="text-xs text-muted-foreground">Enable or disable UI sound effects</p>
+              </div>
+            </div>
+            <button
+              onClick={toggleSounds}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                soundsEnabled ? 'bg-primary' : 'bg-muted-foreground/30'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  soundsEnabled ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+
           <div>
             <label className="text-xs lg:text-sm font-semibold text-foreground">Organization Name</label>
             <input
@@ -58,7 +108,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <Button className="w-full text-sm h-10">Save General Settings</Button>
+          <Button onClick={handleSave} className="w-full text-sm h-10">Save General Settings</Button>
         </div>
       </Card>
 

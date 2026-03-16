@@ -105,17 +105,29 @@ export function DashboardAnalytics() {
   return (
     <div className="space-y-6">
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {metrics.map((metric) => {
           const Icon = metric.icon;
           return (
-            <Card key={metric.label} className="p-4 lg:p-6">
-              <div className="flex items-start justify-between">
-                <div className="min-w-0">
-                  <p className="text-xs lg:text-sm text-muted-foreground truncate">{metric.label}</p>
-                  <p className="text-xl lg:text-2xl font-bold text-foreground mt-1 lg:mt-2 truncate">{metric.value}</p>
+            <Card key={metric.label} className="relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-3 opacity-10 transition-opacity group-hover:opacity-20">
+                <Icon className={`w-12 h-12 lg:w-16 lg:h-16 ${metric.color}`} />
+              </div>
+              <div className="p-6 relative z-10">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`p-2 rounded-lg bg-current/10 ${metric.color}`}>
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <p className="text-sm font-medium text-muted-foreground">{metric.label}</p>
                 </div>
-                <Icon className={`w-6 h-6 lg:w-8 lg:h-8 shrink-0 ${metric.color}`} />
+                <div className="flex items-baseline gap-2">
+                  <p className="text-2xl lg:text-3xl font-bold text-foreground">
+                    {metric.value}
+                  </p>
+                  <span className="text-xs font-semibold text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded">
+                    {metric.change}
+                  </span>
+                </div>
               </div>
             </Card>
           );
@@ -123,69 +135,113 @@ export function DashboardAnalytics() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 gap-6">
-        <Card className="p-4 lg:p-6">
-          <h3 className="text-base lg:text-lg font-semibold text-foreground mb-4">Daily Booking Trend</h3>
-          <div className="h-[250px] lg:h-[300px] w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-foreground">Daily Booking Trend</h3>
+            <div className="flex items-center gap-4 text-xs font-medium text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-[var(--chart-1)]" />
+                <span>Confirmed</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-[var(--destructive)]" />
+                <span>Cancelled</span>
+              </div>
+            </div>
+          </div>
+          <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={last7Days}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                <XAxis dataKey="name" stroke="#6b7280" tick={{fontSize: 12}} />
-                <YAxis stroke="#6b7280" tick={{fontSize: 12}} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                <XAxis 
+                  dataKey="name" 
+                  stroke="var(--muted-foreground)" 
+                  tick={{fontSize: 12}}
+                  axisLine={false}
+                  tickLine={false}
+                  dy={10}
+                />
+                <YAxis 
+                  stroke="var(--muted-foreground)" 
+                  tick={{fontSize: 12}}
+                  axisLine={false}
+                  tickLine={false}
+                />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px'
+                    backgroundColor: 'var(--card)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                   }}
+                  itemStyle={{ fontSize: '12px' }}
                 />
-                <Legend iconType="circle" wrapperStyle={{fontSize: 12}} />
                 <Line
                   type="monotone"
                   dataKey="bookings"
-                  name="Confirmed"
-                  stroke="#3b82f6"
-                  strokeWidth={2}
-                  dot={{ fill: '#3b82f6', r: 3 }}
+                  stroke="var(--chart-1)"
+                  strokeWidth={3}
+                  dot={{ fill: 'var(--chart-1)', r: 4, strokeWidth: 2, stroke: 'var(--card)' }}
+                  activeDot={{ r: 6, strokeWidth: 0 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="cancelled"
-                  name="Cancelled"
-                  stroke="#ef4444"
-                  strokeWidth={2}
-                  dot={{ fill: '#ef4444', r: 3 }}
+                  stroke="var(--destructive)"
+                  strokeWidth={3}
+                  dot={{ fill: 'var(--destructive)', r: 4, strokeWidth: 2, stroke: 'var(--card)' }}
+                  activeDot={{ r: 6, strokeWidth: 0 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </Card>
 
-        <Card className="p-4 lg:p-6">
-          <h3 className="text-base lg:text-lg font-semibold text-foreground mb-4">Room Activity</h3>
-          <div className="h-[300px] lg:h-[300px] w-full overflow-x-auto">
-            <div className="min-w-[400px] h-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={roomUtilizationData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                  <XAxis dataKey="room" stroke="#6b7280" angle={-45} textAnchor="end" height={80} tick={{fontSize: 10}} />
-                  <YAxis stroke="#6b7280" tick={{fontSize: 12}} />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#ffffff',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '8px'
-                    }}
-                  />
-                  <Bar
-                    dataKey="utilization"
-                    name="Bookings"
-                    fill="#10b981"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-foreground">Room Activity</h3>
+            <div className="text-xs font-medium text-muted-foreground">
+              Top performing rooms
             </div>
+          </div>
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={roomUtilizationData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                <XAxis 
+                  dataKey="room" 
+                  stroke="var(--muted-foreground)" 
+                  tick={{fontSize: 11}}
+                  axisLine={false}
+                  tickLine={false}
+                  height={50}
+                  interval={0}
+                />
+                <YAxis 
+                  stroke="var(--muted-foreground)" 
+                  tick={{fontSize: 12}}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  cursor={{ fill: 'var(--muted)', opacity: 0.2 }}
+                  contentStyle={{
+                    backgroundColor: 'var(--card)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                  }}
+                  itemStyle={{ fontSize: '12px' }}
+                />
+                <Bar
+                  dataKey="utilization"
+                  fill="var(--chart-2)"
+                  radius={[6, 6, 0, 0]}
+                  barSize={32}
+                />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </Card>
       </div>

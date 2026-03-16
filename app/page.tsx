@@ -6,9 +6,11 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Building2, Eye, EyeOff } from 'lucide-react';
 import { loginAdmin } from '@/lib/api';
+import { useUISound } from '@/hooks/use-ui-sound';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { playSuccess, playError } = useUISound();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -34,8 +36,10 @@ export default function LoginPage() {
 
       localStorage.setItem('admin_token', data.token);
       localStorage.setItem('admin_user', JSON.stringify(data.user));
+      playSuccess();
       router.push('/admin');
     } catch (err: any) {
+      playError();
       setError(err.message || 'Login failed. Please check your credentials.');
       setLoading(false);
     }

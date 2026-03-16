@@ -79,27 +79,37 @@ export function TopBar({ onMenuClick }: TopBarProps) {
   };
 
   return (
-    <div className="h-16 border-b border-border bg-card flex items-center justify-between px-4 lg:px-6 shrink-0">
+    <div className="h-16 border-b border-border/60 bg-card/50 backdrop-blur-md flex items-center justify-between px-6 lg:px-8 shrink-0 sticky top-0 z-30">
       <div className="flex items-center gap-4 flex-1 min-w-0">
         <button 
           onClick={onMenuClick}
-          className="lg:hidden p-2 hover:bg-muted rounded-lg text-foreground shrink-0"
+          className="lg:hidden p-2 hover:bg-muted rounded-xl text-foreground shrink-0 transition-colors"
         >
           <Menu className="w-6 h-6" />
         </button>
-        <h2 className="text-sm lg:text-lg font-semibold text-foreground truncate max-w-[200px] lg:max-w-none">
-          Conference Room Booking
-        </h2>
+        <div>
+          <h2 className="text-sm lg:text-lg font-bold text-foreground truncate max-w-[200px] lg:max-w-none tracking-tight">
+            Dashboard
+          </h2>
+          <p className="hidden lg:block text-[10px] text-muted-foreground uppercase font-bold tracking-widest mt-0.5">
+            Systems Management
+          </p>
+        </div>
       </div>
 
-      <div className="flex items-center gap-2 lg:gap-4 shrink-0">
-        <div className="hidden sm:flex items-center gap-2 ml-2">
-          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-            <User className="w-4 h-4 text-primary" />
+      <div className="flex items-center gap-3 lg:gap-6 shrink-0">
+        <div className="hidden sm:flex items-center gap-3 pl-4 border-l border-border/60">
+          <div className="text-right">
+            <p className="text-xs font-bold text-foreground">
+              {mounted ? (user?.name || 'Admin User') : 'Admin User'}
+            </p>
+            <p className="text-[10px] text-primary font-semibold uppercase tracking-tighter">
+              Super Admin
+            </p>
           </div>
-          <span className="text-sm font-medium text-foreground truncate max-w-[80px]">
-            {mounted ? (user?.name || 'Admin') : 'Admin'}
-          </span>
+          <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-inner">
+            <User className="w-5 h-5 text-primary" />
+          </div>
         </div>
 
         <Popover>
