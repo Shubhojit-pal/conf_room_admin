@@ -41,10 +41,10 @@ export default function UsersPage() {
   );
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 lg:p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">User Management</h1>
-        <p className="text-muted-foreground mt-1">View and manage system users</p>
+        <h1 className="text-2xl lg:text-3xl font-bold text-foreground">User Management</h1>
+        <p className="text-sm text-muted-foreground mt-1">View and manage system users</p>
       </div>
 
       {error && (
@@ -52,18 +52,18 @@ export default function UsersPage() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-4">
-          <p className="text-sm text-muted-foreground">Total Users</p>
-          <p className="text-2xl font-bold text-foreground mt-1">{totalUsers}</p>
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card className="p-3 lg:p-4">
+          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Total</p>
+          <p className="text-xl lg:text-2xl font-bold text-foreground mt-1">{totalUsers}</p>
         </Card>
-        <Card className="p-4">
-          <p className="text-sm text-muted-foreground">Admins</p>
-          <p className="text-2xl font-bold text-purple-600 mt-1">{adminCount}</p>
+        <Card className="p-3 lg:p-4">
+          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Admins</p>
+          <p className="text-xl lg:text-2xl font-bold text-purple-600 mt-1">{adminCount}</p>
         </Card>
-        <Card className="p-4">
-          <p className="text-sm text-muted-foreground">Regular Users</p>
-          <p className="text-2xl font-bold text-blue-600 mt-1">{regularCount}</p>
+        <Card className="p-3 lg:p-4 col-span-2 lg:col-span-1">
+          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Regular Users</p>
+          <p className="text-xl lg:text-2xl font-bold text-blue-600 mt-1">{regularCount}</p>
         </Card>
       </div>
 
@@ -72,44 +72,42 @@ export default function UsersPage() {
         <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
         <input
           type="text"
-          placeholder="Search by name, email, or department..."
+          placeholder="Search users..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+          className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
         />
       </div>
 
       {/* Users Table */}
-      <Card>
+      <Card className="overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="min-w-full divide-y divide-border text-xs lg:text-sm">
             <thead>
-              <tr className="border-b border-border bg-muted/50">
-                <th className="text-left p-4 text-xs font-semibold text-muted-foreground uppercase">UID</th>
-                <th className="text-left p-4 text-xs font-semibold text-muted-foreground uppercase">Name</th>
-                <th className="text-left p-4 text-xs font-semibold text-muted-foreground uppercase">Email</th>
-                <th className="text-left p-4 text-xs font-semibold text-muted-foreground uppercase">Department</th>
-                <th className="text-left p-4 text-xs font-semibold text-muted-foreground uppercase">Phone</th>
-                <th className="text-left p-4 text-xs font-semibold text-muted-foreground uppercase">Role</th>
+              <tr className="bg-muted/50">
+                <th className="text-left p-4 text-[10px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">UID</th>
+                <th className="text-left p-4 text-[10px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">Name</th>
+                <th className="text-left p-4 text-[10px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">Email</th>
+                <th className="text-left p-4 text-[10px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">Dept</th>
+                <th className="text-left p-4 text-[10px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">Role</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-border">
               {filtered.map(u => (
-                <tr key={u.uid} className="border-b border-border hover:bg-muted/30 transition-colors">
-                  <td className="p-4 text-sm font-mono text-foreground">{u.uid}</td>
+                <tr key={u.uid} className="hover:bg-muted/30 transition-colors">
+                  <td className="p-4 font-mono text-foreground whitespace-nowrap">{u.uid.slice(0, 8)}</td>
                   <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                        <span className="text-sm font-bold text-primary">{u.name.charAt(0).toUpperCase()}</span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 lg:w-8 lg:h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <span className="text-[10px] lg:text-sm font-bold text-primary">{u.name.charAt(0).toUpperCase()}</span>
                       </div>
-                      <span className="text-sm font-medium text-foreground">{u.name}</span>
+                      <span className="font-medium text-foreground whitespace-nowrap">{u.name}</span>
                     </div>
                   </td>
-                  <td className="p-4 text-sm text-muted-foreground">{u.email}</td>
-                  <td className="p-4 text-sm text-foreground">{u.dept}</td>
-                  <td className="p-4 text-sm text-foreground">{u.phone_no || '—'}</td>
+                  <td className="p-4 text-muted-foreground whitespace-nowrap">{u.email}</td>
+                  <td className="p-4 text-foreground whitespace-nowrap">{u.dept}</td>
                   <td className="p-4">
-                    <Badge className={getRoleColor(u.userrole_id)}>
+                    <Badge className={`${getRoleColor(u.userrole_id)} text-[10px] px-2 py-0.5 whitespace-nowrap`}>
                       {u.userrole_id === 'admin' || u.userrole_id === 'ADMIN' ? 'Admin' : 'User'}
                     </Badge>
                   </td>

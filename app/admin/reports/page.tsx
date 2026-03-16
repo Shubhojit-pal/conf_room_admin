@@ -210,23 +210,23 @@ export default function ReportsPage() {
   if (loading) return <div className="p-6 h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
   return (
-    <div className="p-6 space-y-6 relative">
+    <div className="p-4 lg:p-6 space-y-6 relative">
       {renderMetricModal()}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Customizable Reports</h1>
-          <p className="text-muted-foreground mt-1">Generate and export booking analytics</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Customizable Reports</h1>
+          <p className="text-sm text-muted-foreground mt-1">Generate and export booking analytics</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="gap-2">
+        <div className="flex overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 gap-2 scrollbar-none">
+          <Button variant="outline" size="sm" className="gap-2 whitespace-nowrap">
             <Calendar className="w-4 h-4" />
-            Date Range
+            Range
           </Button>
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" size="sm" className="gap-2 whitespace-nowrap">
             <Filter className="w-4 h-4" />
-            Filters
+            Filter
           </Button>
-          <Button className="gap-2">
+          <Button size="sm" className="gap-2 whitespace-nowrap">
             <Download className="w-4 h-4" />
             Export
           </Button>
@@ -234,124 +234,93 @@ export default function ReportsPage() {
       </div>
 
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card
-          className="p-4 cursor-pointer hover:shadow-lg hover:border-primary/40 transition-all group active:scale-[0.98]"
-          onClick={() => setSelectedMetric('bookings')}
-        >
-          <div className="flex flex-col h-full">
-            <p className="text-sm text-muted-foreground group-hover:text-primary transition-colors">Total Bookings</p>
-            <p className="text-3xl font-black text-foreground mt-2">{totalBookings}</p>
-            <div className="mt-auto pt-2 flex items-center justify-between text-xs text-muted-foreground">
-              <span>Lifetime total</span>
-              <span className="bg-primary/5 text-primary px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 font-bold transition-opacity">DETAILS</span>
-            </div>
-          </div>
-        </Card>
-
-        <Card
-          className="p-4 cursor-pointer hover:shadow-lg hover:border-blue-400 transition-all group active:scale-[0.98]"
-          onClick={() => setSelectedMetric('utilization')}
-        >
-          <div className="flex flex-col h-full">
-            <p className="text-sm text-muted-foreground group-hover:text-blue-500 transition-colors">Avg. Utilization</p>
-            <p className="text-3xl font-black text-foreground mt-2">{utilization}%</p>
-            <div className="mt-auto pt-2 flex items-center justify-between text-xs text-muted-foreground">
-              <span>Rooms active</span>
-              <span className="bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 font-bold transition-opacity">DETAILS</span>
-            </div>
-          </div>
-        </Card>
-
-        <Card
-          className="p-4 cursor-pointer hover:shadow-lg hover:border-red-400 transition-all group active:scale-[0.98]"
-          onClick={() => setSelectedMetric('cancellation')}
-        >
-          <div className="flex flex-col h-full">
-            <p className="text-sm text-muted-foreground group-hover:text-red-500 transition-colors">Cancellation Rate</p>
-            <p className="text-3xl font-black text-foreground mt-2">{cancellationRate}%</p>
-            <div className="mt-auto pt-2 flex items-center justify-between text-xs text-muted-foreground">
-              <span>Relative to bookings</span>
-              <span className="bg-red-50 text-red-500 px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 font-bold transition-opacity">DETAILS</span>
-            </div>
-          </div>
-        </Card>
-
-        <Card
-          className="p-4 cursor-pointer hover:shadow-lg hover:border-green-400 transition-all group active:scale-[0.98]"
-          onClick={() => setSelectedMetric('users')}
-        >
-          <div className="flex flex-col h-full">
-            <p className="text-sm text-muted-foreground group-hover:text-green-500 transition-colors">Active Users</p>
-            <p className="text-3xl font-black text-foreground mt-2">{activeUsers}</p>
-            <div className="mt-auto pt-2 flex items-center justify-between text-xs text-muted-foreground">
-              <span>Total registered</span>
-              <span className="bg-green-50 text-green-500 px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 font-bold transition-opacity">DETAILS</span>
-            </div>
-          </div>
-        </Card>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+        {[
+          { label: 'Total Bookings', value: totalBookings, metric: 'bookings', color: 'primary', subText: 'Lifetime total' },
+          { label: 'Avg. Utilization', value: `${utilization}%`, metric: 'utilization', color: 'blue', subText: 'Rooms active' },
+          { label: 'Cancellation', value: `${cancellationRate}%`, metric: 'cancellation', color: 'red', subText: 'Relative rate' },
+          { label: 'Active Users', value: activeUsers, metric: 'users', color: 'green', subText: 'Registered users' },
+        ].map(item => (
+          <Card
+            key={item.metric}
+            className={`p-3 lg:p-4 cursor-pointer hover:shadow-lg transition-all group active:scale-[0.98] border-l-4 border-l-${item.color}-500`}
+            onClick={() => setSelectedMetric(item.metric)}
+          >
+            <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-bold tracking-tight">{item.label}</p>
+            <p className="text-xl lg:text-3xl font-black text-foreground mt-1">{item.value}</p>
+            <p className="text-[9px] lg:text-xs text-muted-foreground mt-1">{item.subText}</p>
+          </Card>
+        ))}
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Usage by Department</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={departmentUsage}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, value }: any) => `${name} (${value}%)`}
-                outerRadius={100}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {departmentUsage.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value) => `${value}%`} />
-            </PieChart>
-          </ResponsiveContainer>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+        <Card className="p-4 lg:p-6">
+          <h3 className="text-sm lg:text-lg font-semibold text-foreground mb-4">Usage by Department</h3>
+          <div className="h-[250px] lg:h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={departmentUsage}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name }: any) => name}
+                  outerRadius="80%"
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {departmentUsage.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => `${value}%`} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </Card>
 
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Monthly Trend</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={monthlyBookings}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="month" stroke="#6b7280" />
-              <YAxis stroke="#6b7280" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px'
-                }}
-              />
-              <Legend />
-              <Bar dataKey="bookings" fill="#3b82f6" radius={[8, 8, 0, 0]} />
-              <Bar dataKey="users" fill="#10b981" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+        <Card className="p-4 lg:p-6">
+          <h3 className="text-sm lg:text-lg font-semibold text-foreground mb-4">Monthly Trend</h3>
+          <div className="h-[250px] lg:h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={monthlyBookings}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                <XAxis dataKey="month" stroke="#6b7280" fontSize={10} tickLine={false} axisLine={false} />
+                <YAxis stroke="#6b7280" fontSize={10} tickLine={false} axisLine={false} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '12px'
+                  }}
+                />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
+                <Bar dataKey="bookings" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="users" fill="#10b981" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </Card>
       </div>
 
       {/* Room Popularity */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Room Popularity</h3>
-        <div className="space-y-3">
+      <Card className="p-4 lg:p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm lg:text-lg font-semibold text-foreground">Room Popularity</h3>
+          <p className="text-[10px] text-muted-foreground uppercase font-bold font-mono">Top Performance</p>
+        </div>
+        <div className="space-y-4">
           {roomPopularity.map((room, index) => (
             <div key={room.room}>
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-medium text-foreground">{room.room}</p>
-                <p className="text-sm font-semibold text-foreground">{room.bookings} bookings</p>
+              <div className="flex items-center justify-between mb-1.5">
+                <p className="text-xs lg:text-sm font-medium text-foreground truncate max-w-[200px]">{room.room}</p>
+                <p className="text-xs lg:text-sm font-bold text-foreground">{room.bookings}</p>
               </div>
-              <div className="w-full bg-muted rounded-lg h-2 overflow-hidden">
+              <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
                 <div
-                  className={`h-full rounded-lg transition-all ${index === 0
+                  className={`h-full rounded-full transition-all duration-1000 ${index === 0
                     ? 'bg-blue-500'
                     : index === 1
                       ? 'bg-green-500'
@@ -368,21 +337,21 @@ export default function ReportsPage() {
       </Card>
 
       {/* Report Templates */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">Report Templates</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <Card className="p-4 lg:p-6">
+        <h3 className="text-sm lg:text-lg font-semibold text-foreground mb-4">Report Templates</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 lg:gap-4">
           {[
-            { name: 'Weekly Usage Report', icon: '📊' },
-            { name: 'Monthly Analytics', icon: '📈' },
-            { name: 'Room Utilization', icon: '🏢' },
+            { name: 'Weekly Usage', icon: '📊' },
+            { name: 'Analytics', icon: '📈' },
+            { name: 'Utilization', icon: '🏢' },
             { name: 'User Activity', icon: '👥' },
-            { name: 'Cancellation Analysis', icon: '❌' },
-            { name: 'Department Summary', icon: '📋' },
+            { name: 'Cancellations', icon: '❌' },
+            { name: 'Dept Summary', icon: '📋' },
           ].map((template) => (
-            <Card key={template.name} className="p-4 border cursor-pointer hover:shadow-md transition-shadow">
-              <div className="text-3xl mb-2">{template.icon}</div>
-              <p className="font-semibold text-foreground text-sm">{template.name}</p>
-              <Button variant="outline" size="sm" className="w-full mt-3">
+            <Card key={template.name} className="p-3 lg:p-4 border cursor-pointer hover:shadow-md transition-shadow bg-muted/10 group">
+              <div className="text-xl lg:text-3xl mb-2 group-hover:scale-110 transition-transform">{template.icon}</div>
+              <p className="font-bold text-foreground text-[10px] lg:text-sm">{template.name}</p>
+              <Button variant="ghost" size="sm" className="w-full mt-2 h-7 text-[10px] uppercase font-bold tracking-wider">
                 Generate
               </Button>
             </Card>

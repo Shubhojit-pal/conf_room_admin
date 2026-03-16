@@ -105,17 +105,17 @@ export function DashboardAnalytics() {
   return (
     <div className="space-y-6">
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {metrics.map((metric) => {
           const Icon = metric.icon;
           return (
-            <Card key={metric.label} className="p-6">
+            <Card key={metric.label} className="p-4 lg:p-6">
               <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">{metric.label}</p>
-                  <p className="text-2xl font-bold text-foreground mt-2">{metric.value}</p>
+                <div className="min-w-0">
+                  <p className="text-xs lg:text-sm text-muted-foreground truncate">{metric.label}</p>
+                  <p className="text-xl lg:text-2xl font-bold text-foreground mt-1 lg:mt-2 truncate">{metric.value}</p>
                 </div>
-                <Icon className={`w-8 h-8 ${metric.color}`} />
+                <Icon className={`w-6 h-6 lg:w-8 lg:h-8 shrink-0 ${metric.color}`} />
               </div>
             </Card>
           );
@@ -123,64 +123,70 @@ export function DashboardAnalytics() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Daily Booking Trend (Last 7 Days)</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={last7Days}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="name" stroke="#6b7280" />
-              <YAxis stroke="#6b7280" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px'
-                }}
-              />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="bookings"
-                name="Confirmed"
-                stroke="#3b82f6"
-                strokeWidth={2}
-                dot={{ fill: '#3b82f6', r: 4 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="cancelled"
-                name="Cancelled/Rejected"
-                stroke="#ef4444"
-                strokeWidth={2}
-                dot={{ fill: '#ef4444', r: 4 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+      <div className="grid grid-cols-1 gap-6">
+        <Card className="p-4 lg:p-6">
+          <h3 className="text-base lg:text-lg font-semibold text-foreground mb-4">Daily Booking Trend</h3>
+          <div className="h-[250px] lg:h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={last7Days}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+                <XAxis dataKey="name" stroke="#6b7280" tick={{fontSize: 12}} />
+                <YAxis stroke="#6b7280" tick={{fontSize: 12}} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#ffffff',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px'
+                  }}
+                />
+                <Legend iconType="circle" wrapperStyle={{fontSize: 12}} />
+                <Line
+                  type="monotone"
+                  dataKey="bookings"
+                  name="Confirmed"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  dot={{ fill: '#3b82f6', r: 3 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="cancelled"
+                  name="Cancelled"
+                  stroke="#ef4444"
+                  strokeWidth={2}
+                  dot={{ fill: '#ef4444', r: 3 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </Card>
 
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-foreground mb-4">Room Activity</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={roomUtilizationData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="room" stroke="#6b7280" angle={-45} textAnchor="end" height={80} />
-              <YAxis stroke="#6b7280" />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px'
-                }}
-              />
-              <Bar
-                dataKey="utilization"
-                name="Booking Count"
-                fill="#10b981"
-                radius={[8, 8, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+        <Card className="p-4 lg:p-6">
+          <h3 className="text-base lg:text-lg font-semibold text-foreground mb-4">Room Activity</h3>
+          <div className="h-[300px] lg:h-[300px] w-full overflow-x-auto">
+            <div className="min-w-[400px] h-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={roomUtilizationData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+                  <XAxis dataKey="room" stroke="#6b7280" angle={-45} textAnchor="end" height={80} tick={{fontSize: 10}} />
+                  <YAxis stroke="#6b7280" tick={{fontSize: 12}} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px'
+                    }}
+                  />
+                  <Bar
+                    dataKey="utilization"
+                    name="Bookings"
+                    fill="#10b981"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </Card>
       </div>
     </div>

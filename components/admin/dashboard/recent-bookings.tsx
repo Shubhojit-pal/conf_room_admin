@@ -45,55 +45,55 @@ export function RecentBookings() {
   if (loading) return <Card className="p-6 h-64 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></Card>;
 
   return (
-    <Card className="p-6">
+    <Card className="p-4 lg:p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-foreground">Recent Bookings</h3>
+        <h3 className="text-base lg:text-lg font-semibold text-foreground">Recent Bookings</h3>
         <Link href="/admin/bookings">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" className="text-xs h-8">
             View All
           </Button>
         </Link>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="text-left py-3 px-3 font-semibold text-muted-foreground">Room</th>
-              <th className="text-left py-3 px-3 font-semibold text-muted-foreground">User</th>
-              <th className="text-left py-3 px-3 font-semibold text-muted-foreground">Date & Time</th>
-              <th className="text-left py-3 px-3 font-semibold text-muted-foreground">Status</th>
-              <th className="text-right py-3 px-3 font-semibold text-muted-foreground">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {bookings.map((booking) => (
-              <tr key={booking.booking_id} className="border-b border-border hover:bg-muted/50 transition-colors">
-                <td className="py-3 px-3">
-                  <p className="font-medium text-foreground">{booking.room_name || booking.room_id}</p>
-                </td>
-                <td className="py-3 px-3">
-                  <p className="text-foreground">{booking.user_name || booking.uid}</p>
-                </td>
-                <td className="py-3 px-3">
-                  <p className="text-muted-foreground">{booking.start_date?.slice(0, 10)}</p>
-                  <p className="text-xs text-muted-foreground">{booking.start_time} - {booking.end_time}</p>
-                </td>
-                <td className="py-3 px-3">
-                  <Badge
-                    className={
-                      booking.status === 'confirmed'
-                        ? 'bg-green-100 text-green-800'
-                        : booking.status === 'pending'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-red-100 text-red-800'
-                    }
-                  >
-                    {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                  </Badge>
-                </td>
-                <td className="py-3 px-3 text-right">
-                  <div className="flex items-center justify-end gap-2">
+      <div className="overflow-x-auto -mx-4 lg:mx-0">
+        <div className="inline-block min-w-full align-middle px-4 lg:px-0">
+          <table className="min-w-full text-xs lg:text-sm">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="text-left py-3 px-2 font-semibold text-muted-foreground whitespace-nowrap">Room</th>
+                <th className="text-left py-3 px-2 font-semibold text-muted-foreground whitespace-nowrap">User</th>
+                <th className="text-left py-3 px-2 font-semibold text-muted-foreground whitespace-nowrap">Date & Time</th>
+                <th className="text-left py-3 px-2 font-semibold text-muted-foreground whitespace-nowrap">Status</th>
+                <th className="text-right py-3 px-2 font-semibold text-muted-foreground whitespace-nowrap">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bookings.map((booking) => (
+                <tr key={booking.booking_id} className="border-b border-border hover:bg-muted/50 transition-colors">
+                  <td className="py-3 px-2">
+                    <p className="font-medium text-foreground whitespace-nowrap">{booking.room_name || booking.room_id.slice(0, 8)}</p>
+                  </td>
+                  <td className="py-3 px-2">
+                    <p className="text-foreground whitespace-nowrap">{booking.user_name || booking.uid.slice(0, 8)}</p>
+                  </td>
+                  <td className="py-3 px-2">
+                    <p className="text-muted-foreground whitespace-nowrap">{booking.start_date?.slice(0, 10)}</p>
+                    <p className="text-[10px] text-muted-foreground whitespace-nowrap">{booking.start_time} - {booking.end_time}</p>
+                  </td>
+                  <td className="py-3 px-2">
+                    <Badge
+                      className={`whitespace-nowrap px-2 py-0.5 text-[10px] ${
+                        booking.status === 'confirmed'
+                          ? 'bg-green-100 text-green-800'
+                          : booking.status === 'pending'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-red-100 text-red-800'
+                      }`}
+                    >
+                      {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                    </Badge>
+                  </td>
+                  <td className="py-3 px-2 text-right">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -102,12 +102,12 @@ export function RecentBookings() {
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </Card>
   );

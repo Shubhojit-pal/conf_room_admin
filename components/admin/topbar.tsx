@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, LogOut, User, CheckCircle2 } from 'lucide-react';
+import { Bell, LogOut, User, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   Popover,
   PopoverContent,
@@ -18,7 +17,11 @@ import {
 } from '@/lib/api';
 import { formatDistanceToNow } from 'date-fns';
 
-export function TopBar() {
+interface TopBarProps {
+  onMenuClick?: () => void;
+}
+
+export function TopBar({ onMenuClick }: TopBarProps) {
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -47,7 +50,6 @@ export function TopBar() {
     }
     loadNotifications();
 
-    // Poll for notifications every 30 seconds
     const interval = setInterval(loadNotifications, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -77,17 +79,25 @@ export function TopBar() {
   };
 
   return (
-    <div className="h-16 border-b border-border bg-card flex items-center justify-between px-6">
-      <div className="flex-1">
-        <h2 className="text-lg font-semibold text-foreground">Conference Room Booking System</h2>
+    <div className="h-16 border-b border-border bg-card flex items-center justify-between px-4 lg:px-6 shrink-0">
+      <div className="flex items-center gap-4 flex-1 min-w-0">
+        <button 
+          onClick={onMenuClick}
+          className="lg:hidden p-2 hover:bg-muted rounded-lg text-foreground shrink-0"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+        <h2 className="text-sm lg:text-lg font-semibold text-foreground truncate max-w-[200px] lg:max-w-none">
+          Conference Room Booking
+        </h2>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 mr-2">
+      <div className="flex items-center gap-2 lg:gap-4 shrink-0">
+        <div className="hidden sm:flex items-center gap-2 ml-2">
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
             <User className="w-4 h-4 text-primary" />
           </div>
-          <span className="text-sm font-medium text-foreground">
+          <span className="text-sm font-medium text-foreground truncate max-w-[80px]">
             {mounted ? (user?.name || 'Admin') : 'Admin'}
           </span>
         </div>
@@ -101,7 +111,7 @@ export function TopBar() {
               )}
             </button>
           </PopoverTrigger>
-          <PopoverContent className="w-80 p-0" align="end">
+          <PopoverContent className="w-[calc(100vw-2rem)] sm:w-80 p-0" align="end">
             <div className="p-4 border-b border-border flex items-center justify-between">
               <h3 className="font-semibold text-sm">Notifications</h3>
               {unreadCount > 0 && (
@@ -111,11 +121,11 @@ export function TopBar() {
                   className="text-xs h-8 px-2 text-primary hover:text-primary"
                   onClick={handleMarkAllRead}
                 >
-                  Mark all as read
+                  Mark all
                 </Button>
               )}
             </div>
-            <div className="max-h-[400px] overflow-y-auto">
+            <div className="max-h-[300px] overflow-y-auto">
               {notifications.length === 0 ? (
                 <div className="p-8 text-center text-muted-foreground">
                   <Bell className="w-8 h-8 mx-auto mb-2 opacity-20" />
@@ -129,11 +139,11 @@ export function TopBar() {
                     onClick={() => !notification.isRead && handleMarkRead(notification._id)}
                   >
                     <div className="flex gap-3">
-                      <div className="flex-1">
-                        <p className={`text-sm leading-tight ${!notification.isRead ? 'font-semibold' : ''}`}>
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-sm leading-tight truncate ${!notification.isRead ? 'font-semibold' : ''}`}>
                           {notification.title}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
                           {notification.message}
                         </p>
                         <p className="text-[10px] text-muted-foreground mt-1 uppercase font-medium">
@@ -155,15 +165,15 @@ export function TopBar() {
                 className="w-full text-xs text-muted-foreground"
                 onClick={() => router.push('/admin/notifications')}
               >
-                View all settings
+                View all notifications
               </Button>
             </div>
           </PopoverContent>
         </Popover>
 
-        <Button variant="ghost" size="sm" className="gap-2" onClick={handleLogout}>
+        <Button variant="ghost" size="sm" className="gap-2 px-2 lg:px-4" onClick={handleLogout}>
           <LogOut className="w-4 h-4" />
-          Logout
+          <span className="hidden lg:inline">Logout</span>
         </Button>
       </div>
     </div>

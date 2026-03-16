@@ -135,13 +135,13 @@ export default function BookingsPage() {
   );
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-4 lg:p-6 space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">All Bookings</h1>
-          <p className="text-muted-foreground mt-1">View and manage all conference room bookings</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-foreground">All Bookings</h1>
+          <p className="text-sm text-muted-foreground mt-1">View and manage all conference room bookings</p>
         </div>
-        <Button variant="outline" className="gap-2">
+        <Button variant="outline" className="gap-2 self-start sm:self-auto" size="sm">
           <Download className="w-4 h-4" />
           Export
         </Button>
@@ -152,43 +152,44 @@ export default function BookingsPage() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="p-4">
-          <p className="text-sm text-muted-foreground">Total Bookings</p>
-          <p className="text-2xl font-bold text-foreground mt-1">{totalBookings}</p>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="p-3 lg:p-4">
+          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Total</p>
+          <p className="text-xl lg:text-2xl font-bold text-foreground mt-1">{totalBookings}</p>
         </Card>
-        <Card className="p-4">
-          <p className="text-sm text-muted-foreground">Confirmed</p>
-          <p className="text-2xl font-bold text-green-600 mt-1">{confirmedCount}</p>
+        <Card className="p-3 lg:p-4">
+          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Confirmed</p>
+          <p className="text-xl lg:text-2xl font-bold text-green-600 mt-1">{confirmedCount}</p>
         </Card>
-        <Card className="p-4">
-          <p className="text-sm text-muted-foreground">Pending</p>
-          <p className="text-2xl font-bold text-yellow-600 mt-1">{pendingCount}</p>
+        <Card className="p-3 lg:p-4">
+          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Pending</p>
+          <p className="text-xl lg:text-2xl font-bold text-yellow-600 mt-1">{pendingCount}</p>
         </Card>
-        <Card className="p-4">
-          <p className="text-sm text-muted-foreground">Cancelled/Rejected</p>
-          <p className="text-2xl font-bold text-red-600 mt-1">{cancelledCount}</p>
+        <Card className="p-3 lg:p-4">
+          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Cancelled</p>
+          <p className="text-xl lg:text-2xl font-bold text-red-600 mt-1">{cancelledCount}</p>
         </Card>
       </div>
 
       {/* Search and Filter */}
-      <div className="flex gap-4">
-        <div className="relative flex-1">
+      <div className="flex flex-col gap-4">
+        <div className="relative">
           <Search className="absolute left-3 top-2.5 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search by room, user, or purpose..."
+            placeholder="Search bookings..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex overflow-x-auto pb-1 -mx-4 px-4 gap-2 scrollbar-none">
           {['all', 'confirmed', 'pending', 'rejected', 'cancelled'].map(s => (
             <Button
               key={s}
               variant={filterStatus === s ? 'default' : 'outline'}
               size="sm"
+              className="text-xs whitespace-nowrap px-3"
               onClick={() => setFilterStatus(s)}
             >
               {s.charAt(0).toUpperCase() + s.slice(1)}
@@ -198,69 +199,66 @@ export default function BookingsPage() {
       </div>
 
       {/* Bookings Table */}
-      <Card>
+      <Card className="overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="min-w-full divide-y divide-border">
             <thead>
-              <tr className="border-b border-border bg-muted/50">
-                <th className="text-left p-4 text-xs font-semibold text-muted-foreground uppercase">Booking ID</th>
-                <th className="text-left p-4 text-xs font-semibold text-muted-foreground uppercase">Room</th>
-                <th className="text-left p-4 text-xs font-semibold text-muted-foreground uppercase">User</th>
-                <th className="text-left p-4 text-xs font-semibold text-muted-foreground uppercase">Date</th>
-                <th className="text-left p-4 text-xs font-semibold text-muted-foreground uppercase">Time</th>
-                <th className="text-left p-4 text-xs font-semibold text-muted-foreground uppercase">Purpose</th>
-                <th className="text-left p-4 text-xs font-semibold text-muted-foreground uppercase">Status</th>
-                <th className="text-left p-4 text-xs font-semibold text-muted-foreground uppercase">Actions</th>
+              <tr className="bg-muted/50">
+                <th className="text-left p-4 text-[10px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">ID</th>
+                <th className="text-left p-4 text-[10px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">Room</th>
+                <th className="text-left p-4 text-[10px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">User</th>
+                <th className="text-left p-4 text-[10px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">Date</th>
+                <th className="text-left p-4 text-[10px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">Time</th>
+                <th className="text-left p-4 text-[10px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">Status</th>
+                <th className="text-right p-4 text-[10px] font-bold text-muted-foreground uppercase tracking-wider whitespace-nowrap">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-border">
               {filtered.map(b => (
-                <tr key={b.booking_id} className="border-b border-border hover:bg-muted/30 transition-colors">
-                  <td className="p-4 text-sm font-mono text-foreground">{b.booking_id}</td>
+                <tr key={b.booking_id} className="hover:bg-muted/30 transition-colors">
+                  <td className="p-4 text-xs font-mono text-foreground whitespace-nowrap">{b.booking_id.slice(0, 8)}</td>
                   <td className="p-4">
-                    <p className="text-sm font-medium text-foreground">{b.room_name || b.room_id}</p>
-                    <p className="text-xs text-muted-foreground">{b.location}</p>
+                    <p className="text-sm font-medium text-foreground whitespace-nowrap">{b.room_name || b.room_id.slice(0, 8)}</p>
+                    <p className="text-[10px] text-muted-foreground truncate max-w-[120px]">{b.location}</p>
                   </td>
                   <td className="p-4">
-                    <p className="text-sm text-foreground">{b.user_name || b.uid}</p>
-                    <p className="text-xs text-muted-foreground">{b.email}</p>
+                    <p className="text-sm text-foreground whitespace-nowrap">{b.user_name || b.uid.slice(0, 8)}</p>
+                    <p className="text-[10px] text-muted-foreground truncate max-w-[120px]">{b.email}</p>
                   </td>
-                  <td className="p-4 text-sm text-foreground">
+                  <td className="p-4 text-xs text-foreground whitespace-nowrap">
                     {b.selected_dates ? (
-                      <div className="flex flex-wrap gap-1 max-w-[150px]">
-                        {b.selected_dates.split(',').sort().map(d => (
-                          <Badge key={d} variant="outline" className="text-[10px] px-1 py-0">{d.slice(5)}</Badge>
+                      <div className="flex flex-wrap gap-1 max-w-[100px]">
+                        {b.selected_dates.split(',').sort().slice(0, 2).map(d => (
+                          <Badge key={d} variant="outline" className="text-[9px] px-1 py-0">{d.slice(5)}</Badge>
                         ))}
+                        {b.selected_dates.split(',').length > 2 && <span className="text-[9px] text-muted-foreground">+{b.selected_dates.split(',').length - 2}</span>}
                       </div>
                     ) : (
-                      <>
-                        {b.start_date?.slice(0, 10)}
-                        {b.start_date?.slice(0, 10) !== b.end_date?.slice(0, 10) && ` to ${b.end_date?.slice(0, 10)}`}
-                      </>
+                      b.start_date?.slice(5, 10)
                     )}
                   </td>
-                  <td className="p-4 text-sm text-foreground">
+                  <td className="p-4 text-xs text-foreground whitespace-nowrap">
                     {b.selected_slots ? (
-                      <div className="flex flex-wrap gap-1 max-w-[120px]">
-                        {b.selected_slots.split(',').sort().map(s => (
-                          <Badge key={s} variant="outline" className="text-[10px] px-1 py-0">{s.split('-')[0].slice(0, 5)}</Badge>
+                      <div className="flex flex-wrap gap-1 max-w-[80px]">
+                        {b.selected_slots.split(',').sort().slice(0, 1).map(s => (
+                          <Badge key={s} variant="outline" className="text-[9px] px-1 py-0">{s.split('-')[0].slice(0, 5)}</Badge>
                         ))}
+                        {b.selected_slots.split(',').length > 1 && <span className="text-[9px] text-muted-foreground">+{b.selected_slots.split(',').length - 1}</span>}
                       </div>
                     ) : (
-                      `${b.start_time?.slice(0, 5)} – ${b.end_time?.slice(0, 5)}`
+                      b.start_time?.slice(0, 5)
                     )}
                   </td>
-                  <td className="p-4 text-sm text-foreground max-w-[200px] truncate">{b.purpose}</td>
                   <td className="p-4">
-                    <Badge className={getStatusBadge(b.status)}>
+                    <Badge className={`${getStatusBadge(b.status)} whitespace-nowrap text-[10px] px-2 py-0.5`}>
                       {b.status.charAt(0).toUpperCase() + b.status.slice(1)}
                     </Badge>
                   </td>
-                  <td className="p-4">
+                  <td className="p-4 text-right">
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-destructive hover:text-destructive"
+                      className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                       onClick={() => openCancelModal(b)}
                     >
                       <Trash2 className="w-4 h-4" />
