@@ -151,19 +151,39 @@ export default function BookingsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <Card className="p-3 lg:p-4">
-          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Total Bookings</p>
+        <Card 
+          className={`p-3 lg:p-4 cursor-pointer transition-all hover:shadow-md hover:border-primary/50 group ${filterStatus === 'all' ? 'ring-2 ring-primary ring-offset-2' : ''}`}
+          onClick={() => setFilterStatus('all')}
+        >
+          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold group-hover:text-primary transition-colors">Total Bookings</p>
           <p className="text-xl lg:text-2xl font-bold text-foreground mt-1">{totalBookings}</p>
         </Card>
-        <Card className="p-3 lg:p-4">
-          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Confirmed</p>
+        <Card 
+          className={`p-3 lg:p-4 cursor-pointer transition-all hover:shadow-md hover:border-green-500/50 group ${filterStatus === 'confirmed' ? 'ring-2 ring-green-500 ring-offset-2' : ''}`}
+          onClick={() => setFilterStatus('confirmed')}
+        >
+          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold group-hover:text-green-600 transition-colors">Confirmed</p>
           <p className="text-xl lg:text-2xl font-bold text-green-600 mt-1">{confirmedCount}</p>
         </Card>
-        <Card className="p-3 lg:p-4">
-          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Cancelled / Rejected</p>
+        <Card 
+          className={`p-3 lg:p-4 cursor-pointer transition-all hover:shadow-md hover:border-red-500/50 group ${filterStatus === 'cancelled' || filterStatus === 'rejected' ? 'ring-2 ring-red-500 ring-offset-2' : ''}`}
+          onClick={() => setFilterStatus('cancelled')}
+        >
+          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold group-hover:text-red-600 transition-colors">Cancelled / Rejected</p>
           <p className="text-xl lg:text-2xl font-bold text-red-600 mt-1">{cancelledCount}</p>
         </Card>
       </div>
+
+      {filterStatus !== 'all' && (
+        <div className="flex items-center justify-between bg-muted/30 p-2 px-4 rounded-lg">
+          <p className="text-xs font-medium text-muted-foreground">
+            Showing <span className="text-foreground font-bold uppercase">{filterStatus}</span> bookings
+          </p>
+          <Button variant="ghost" size="sm" className="h-7 text-[10px] font-bold uppercase tracking-wider" onClick={() => setFilterStatus('all')}>
+            Clear Filter
+          </Button>
+        </div>
+      )}
 
       {/* Search and Filter */}
       <div className="flex flex-col gap-4">

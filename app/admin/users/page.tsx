@@ -12,17 +12,26 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterRole, setFilterRole] = useState<'all' | 'admin' | 'user'>('all');
 
-  useEffect(() => {
+  const loadUsers = () => {
     fetchAllUsers()
       .then(setUsers)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadUsers();
+    const interval = setInterval(loadUsers, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const filtered = users.filter(u => {
     const q = searchQuery.toLowerCase();
-    return !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.dept.toLowerCase().includes(q);
+    const roleMatch = filterRole === 'all' || u.userrole_id?.toLowerCase() === filterRole.toLowerCase();
+    const searchMatch = !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.dept.toLowerCase().includes(q);
+    return roleMatch && searchMatch;
   });
 
   const getRoleColor = (role: string) => {
@@ -53,19 +62,39 @@ export default function UsersPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card className="p-3 lg:p-4">
-          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Total</p>
+        <Card 
+          className={`p-3 lg:p-4 cursor-pointer transition-all hover:shadow-md hover:border-primary/50 group ${filterRole === 'all' ? 'ring-2 ring-primary ring-offset-2' : ''}`}
+          onClick={() => setFilterRole('all')}
+        >
+          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold group-hover:text-primary transition-colors">Total</p>
           <p className="text-xl lg:text-2xl font-bold text-foreground mt-1">{totalUsers}</p>
         </Card>
-        <Card className="p-3 lg:p-4">
-          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Admins</p>
+        <Card 
+          className={`p-3 lg:p-4 cursor-pointer transition-all hover:shadow-md hover:border-purple-500/50 group ${filterRole === 'admin' ? 'ring-2 ring-purple-500 ring-offset-2' : ''}`}
+          onClick={() => setFilterRole('admin')}
+        >
+          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold group-hover:text-purple-600 transition-colors">Admins</p>
           <p className="text-xl lg:text-2xl font-bold text-purple-600 mt-1">{adminCount}</p>
         </Card>
-        <Card className="p-3 lg:p-4 col-span-2 lg:col-span-1">
-          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Regular Users</p>
+        <Card 
+          className={`p-3 lg:p-4 col-span-2 lg:col-span-1 cursor-pointer transition-all hover:shadow-md hover:border-blue-500/50 group ${filterRole === 'user' ? 'ring-2 ring-blue-500 ring-offset-2' : ''}`}
+          onClick={() => setFilterRole('user')}
+        >
+          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold group-hover:text-blue-600 transition-colors">Regular Users</p>
           <p className="text-xl lg:text-2xl font-bold text-blue-600 mt-1">{regularCount}</p>
         </Card>
       </div>
+
+      {filterRole !== 'all' && (
+        <div className="flex items-center justify-between bg-muted/30 p-2 px-4 rounded-lg">
+          <p className="text-xs font-medium text-muted-foreground">
+            Showing <span className="text-foreground font-bold">{filterRole === 'admin' ? 'Administrators' : 'Regular Users'}</span>
+          </p>
+          <Button variant="ghost" size="sm" className="h-7 text-[10px] font-bold uppercase tracking-wider" onClick={() => setFilterRole('all')}>
+            Clear Filter
+          </Button>
+        </div>
+      )}
 
       {/* Search */}
       <div className="relative">

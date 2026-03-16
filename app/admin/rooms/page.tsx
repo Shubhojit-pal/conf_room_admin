@@ -16,6 +16,7 @@ export default function RoomsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | undefined>(undefined);
   const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
+  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
 
   const loadRooms = async () => {
     try {
@@ -28,7 +29,11 @@ export default function RoomsPage() {
     }
   };
 
-  useEffect(() => { loadRooms(); }, []);
+  useEffect(() => { 
+    loadRooms();
+    const interval = setInterval(loadRooms, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleDelete = async (catalog_id: string, room_id: string) => {
     if (!confirm('Are you sure you want to delete this room?')) return;
@@ -78,6 +83,12 @@ export default function RoomsPage() {
   const inactiveRooms = rooms.filter(r => r.status === 'inactive').length;
   const avgCapacity = totalRooms > 0 ? Math.round(rooms.reduce((s, r) => s + r.capacity, 0) / totalRooms) : 0;
 
+  const filteredRooms = rooms.filter(r => {
+    if (filterStatus === 'active') return r.status !== 'inactive';
+    if (filterStatus === 'inactive') return r.status === 'inactive';
+    return true;
+  });
+
   if (loading) return (
     <div className="p-6 flex items-center justify-center min-h-[300px]">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -111,27 +122,47 @@ export default function RoomsPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-3 lg:p-4">
-          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Total</p>
+        <Card 
+          className={`p-3 lg:p-4 cursor-pointer transition-all hover:shadow-md hover:border-primary/50 group ${filterStatus === 'all' ? 'ring-2 ring-primary ring-offset-2' : ''}`}
+          onClick={() => setFilterStatus('all')}
+        >
+          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold group-hover:text-primary transition-colors">Total</p>
           <p className="text-xl lg:text-2xl font-bold text-foreground mt-1">{totalRooms}</p>
         </Card>
-        <Card className="p-3 lg:p-4">
-          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Active</p>
+        <Card 
+          className={`p-3 lg:p-4 cursor-pointer transition-all hover:shadow-md hover:border-green-500/50 group ${filterStatus === 'active' ? 'ring-2 ring-green-500 ring-offset-2' : ''}`}
+          onClick={() => setFilterStatus('active')}
+        >
+          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold group-hover:text-green-600 transition-colors">Active</p>
           <p className="text-xl lg:text-2xl font-bold text-green-600 mt-1">{activeRooms}</p>
         </Card>
-        <Card className="p-3 lg:p-4">
-          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Inactive</p>
+        <Card 
+          className={`p-3 lg:p-4 cursor-pointer transition-all hover:shadow-md hover:border-slate-400/50 group ${filterStatus === 'inactive' ? 'ring-2 ring-slate-400 ring-offset-2' : ''}`}
+          onClick={() => setFilterStatus('inactive')}
+        >
+          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold group-hover:text-slate-600 transition-colors">Inactive</p>
           <p className="text-xl lg:text-2xl font-bold text-slate-400 mt-1">{inactiveRooms}</p>
         </Card>
-        <Card className="p-3 lg:p-4">
+        <Card className="p-3 lg:p-4 opacity-80">
           <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Avg Cap</p>
           <p className="text-xl lg:text-2xl font-bold text-foreground mt-1">{avgCapacity}</p>
         </Card>
       </div>
 
+      {filterStatus !== 'all' && (
+        <div className="flex items-center justify-between bg-muted/30 p-2 px-4 rounded-lg">
+          <p className="text-xs font-medium text-muted-foreground">
+            Showing <span className="text-foreground font-bold">{filterStatus}</span> rooms
+          </p>
+          <Button variant="ghost" size="sm" className="h-7 text-[10px] font-bold uppercase tracking-wider" onClick={() => setFilterStatus('all')}>
+            Clear Filter
+          </Button>
+        </div>
+      )}
+
       {/* Rooms Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        {rooms.map((room) => {
+        {filteredRooms.map((room) => {
           const amenityList = room.amenities ? room.amenities.split(',').map(a => a.trim()) : [];
           const isActive = room.status !== 'inactive';
           const toggleKey = `${room.catalog_id}-${room.room_id}`;
