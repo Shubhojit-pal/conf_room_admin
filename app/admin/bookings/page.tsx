@@ -116,7 +116,6 @@ export default function BookingsPage() {
   const getStatusBadge = (status: string) => {
     const colors: Record<string, string> = {
       confirmed: 'bg-green-100 text-green-800',
-      pending: 'bg-yellow-100 text-yellow-800',
       rejected: 'bg-red-100 text-red-800',
       cancelled: 'bg-gray-100 text-gray-800',
     };
@@ -125,7 +124,6 @@ export default function BookingsPage() {
 
   const totalBookings = bookings.length;
   const confirmedCount = bookings.filter(b => b.status === 'confirmed').length;
-  const pendingCount = bookings.filter(b => b.status === 'pending').length;
   const cancelledCount = bookings.filter(b => b.status === 'cancelled' || b.status === 'rejected').length;
 
   if (loading) return (
@@ -152,9 +150,9 @@ export default function BookingsPage() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className="p-3 lg:p-4">
-          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Total</p>
+          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Total Bookings</p>
           <p className="text-xl lg:text-2xl font-bold text-foreground mt-1">{totalBookings}</p>
         </Card>
         <Card className="p-3 lg:p-4">
@@ -162,11 +160,7 @@ export default function BookingsPage() {
           <p className="text-xl lg:text-2xl font-bold text-green-600 mt-1">{confirmedCount}</p>
         </Card>
         <Card className="p-3 lg:p-4">
-          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Pending</p>
-          <p className="text-xl lg:text-2xl font-bold text-yellow-600 mt-1">{pendingCount}</p>
-        </Card>
-        <Card className="p-3 lg:p-4">
-          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Cancelled</p>
+          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Cancelled / Rejected</p>
           <p className="text-xl lg:text-2xl font-bold text-red-600 mt-1">{cancelledCount}</p>
         </Card>
       </div>
@@ -184,7 +178,7 @@ export default function BookingsPage() {
           />
         </div>
         <div className="flex overflow-x-auto pb-1 -mx-4 px-4 gap-2 scrollbar-none">
-          {['all', 'confirmed', 'pending', 'rejected', 'cancelled'].map(s => (
+          {['all', 'confirmed', 'rejected', 'cancelled'].map(s => (
             <Button
               key={s}
               variant={filterStatus === s ? 'default' : 'outline'}

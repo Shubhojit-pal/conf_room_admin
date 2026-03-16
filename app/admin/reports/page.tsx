@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Download, Calendar, Filter } from 'lucide-react';
+import { Download, Calendar as CalendarIcon, Filter as FilterIcon } from 'lucide-react';
 import { fetchAllBookings, fetchAllUsers, fetchRooms, fetchCancellations, Booking, User, Room, Cancellation } from '@/lib/api';
 import {
   PieChart,
@@ -19,6 +19,13 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
+
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { Checkbox } from '@/components/ui/checkbox';
+import { format } from 'date-fns';
+import { DateRange } from 'react-day-picker';
+import { toast } from '@/components/ui/use-toast';
 
 export default function ReportsPage() {
   const [data, setData] = useState<{
@@ -54,11 +61,112 @@ export default function ReportsPage() {
 
   const [selectedMetric, setSelectedMetric] = useState<string | null>(null);
 
-  const totalBookings = data.bookings.length;
-  const activeUsers = data.users.length;
-  const cancellationRate = totalBookings > 0 ? ((data.cancellations.length / totalBookings) * 100).toFixed(1) : '0';
+  // Filter State
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: new Date(new Date().setDate(new Date().getDate() - 30)), // Last 30 days default
+    to: new Date()
+  });
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [roomFilter, setRoomFilter] = useState<string[]>([]);
 
-  const roomsWithBookings = new Set(data.bookings.filter(b => b.status === 'confirmed').map(b => `${b.catalog_id}-${b.room_id}`));
+  // Derived Filtered Data
+  const filteredBookings = data.bookings.filter(b => {
+    const bDate = new Date(b.start_date);
+    const dateMatch = !dateRange?.from || !dateRange?.to || (bDate >= dateRange.from && bDate <= dateRange.to);
+    const statusMatch = statusFilter.length === 0 || statusFilter.includes(b.status);
+    const roomMatch = roomFilter.length === 0 || roomFilter.includes(`${b.catalog_id}-${b.room_id}`);
+    return dateMatch && statusMatch && roomMatch;
+  });
+
+  const clearFilters = () => {
+    setDateRange(undefined);
+    setStatusFilter([]);
+    setRoomFilter([]);
+    toast({ title: 'Filters Cleared', description: 'Showing all historical data.' });
+  };
+
+  // Helper: Export to CSV
+  const exportToCSV = (filename: string, rows: any[]) => {
+    if (!rows.length) {
+      toast({ title: 'No data', description: 'There is no data to export for this report.', variant: 'destructive' });
+      return;
+    }
+    const headers = Object.keys(rows[0]).join(',');
+    const csvContent = [headers, ...rows.map(r => Object.values(r).map(v => `"${v}"`).join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${filename}_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    toast({ title: 'Report Generated', description: `Your "${filename}" report has been downloaded.` });
+  };
+
+  const handleGenerateReport = (templateName: string) => {
+    switch (templateName) {
+      case 'Weekly Usage': {
+        const lastWeek = new Date();
+        lastWeek.setDate(lastWeek.getDate() - 7);
+        const filtered = filteredBookings.filter(b => new Date(b.start_date) >= lastWeek);
+        exportToCSV('Weekly_Usage', filtered);
+        break;
+      }
+      case 'Analytics': {
+        const stats = [
+          { metric: 'Total Bookings', value: filteredBookings.length },
+          { metric: 'Confirmed', value: filteredBookings.filter(b => b.status === 'confirmed').length },
+          { metric: 'Cancelled', value: filteredBookings.filter(b => b.status === 'cancelled').length },
+          { metric: 'Active Users', value: data.users.length },
+        ];
+        exportToCSV('System_Analytics', stats);
+        break;
+      }
+      case 'Utilization': {
+        const utilization = data.rooms.map(room => ({
+          room: room.room_name,
+          total_bookings: filteredBookings.filter(b => b.catalog_id === room.catalog_id && b.room_id === room.room_id).length,
+          confirmed: filteredBookings.filter(b => b.catalog_id === room.catalog_id && b.room_id === room.room_id && b.status === 'confirmed').length
+        }));
+        exportToCSV('Room_Utilization', utilization);
+        break;
+      }
+      case 'User Activity': {
+        const activity = data.users.map(u => ({
+          name: u.name,
+          email: u.email,
+          dept: u.dept,
+          total_bookings: filteredBookings.filter(b => b.uid === u.uid).length,
+          confirmed: filteredBookings.filter(b => b.uid === u.uid && b.status === 'confirmed').length
+        }));
+        exportToCSV('User_Activity', activity);
+        break;
+      }
+      case 'Cancellations': {
+        exportToCSV('Cancellations_Report', data.cancellations.filter(c => filteredBookings.some(b => b.booking_id === c.booking_id)));
+        break;
+      }
+      case 'Dept Summary': {
+        const deptCounts: Record<string, number> = {};
+        const userDeptMap: Record<string, string> = {};
+        data.users.forEach(u => { userDeptMap[u.uid] = u.dept || 'Other'; });
+        filteredBookings.forEach(b => {
+          const dept = userDeptMap[b.uid] || 'Other';
+          deptCounts[dept] = (deptCounts[dept] || 0) + 1;
+        });
+        const summary = Object.entries(deptCounts).map(([dept, count]) => ({ department: dept, total_bookings: count }));
+        exportToCSV('Department_Summary', summary);
+        break;
+      }
+      default: break;
+    }
+  };
+
+  const totalBookings = filteredBookings.length;
+// ... (rest of the processing logic)
+  const activeUsers = data.users.length;
+  const filteredCancellations = data.cancellations.filter(c => filteredBookings.some(b => b.booking_id === c.booking_id));
+  const cancellationRate = totalBookings > 0 ? ((filteredCancellations.length / totalBookings) * 100).toFixed(1) : '0';
+
+  const roomsWithBookings = new Set(filteredBookings.filter(b => b.status === 'confirmed').map(b => `${b.catalog_id}-${b.room_id}`));
   const utilization = data.rooms.length > 0 ? Math.round((roomsWithBookings.size / data.rooms.length) * 100) : 0;
 
   // Process Dynamic Chart Data
@@ -67,7 +175,7 @@ export default function ReportsPage() {
     data.users.forEach(u => { userDeptMap[u.uid] = u.dept || 'Other'; });
 
     const deptCounts: Record<string, number> = {};
-    data.bookings.filter(b => b.status === 'confirmed').forEach(b => {
+    filteredBookings.filter(b => b.status === 'confirmed').forEach(b => {
       const dept = userDeptMap[b.uid] || 'Other';
       deptCounts[dept] = (deptCounts[dept] || 0) + 1;
     });
@@ -94,7 +202,7 @@ export default function ReportsPage() {
       monthlyStats[m] = { bookings: 0, users: new Set() };
     }
 
-    data.bookings.filter(b => b.status === 'confirmed').forEach(b => {
+    filteredBookings.filter(b => b.status === 'confirmed').forEach(b => {
       const date = new Date(b.start_date);
       if (date.getFullYear() === currentYear) {
         const m = months[date.getMonth()];
@@ -120,7 +228,7 @@ export default function ReportsPage() {
 
   const roomPopularity = data.rooms.slice(0, 5).map(room => ({
     room: room.room_name,
-    bookings: data.bookings.filter(b => b.catalog_id === room.catalog_id && b.room_id === room.room_id && b.status === 'confirmed').length
+    bookings: filteredBookings.filter(b => b.catalog_id === room.catalog_id && b.room_id === room.room_id && b.status === 'confirmed').length
   })).sort((a, b) => b.bookings - a.bookings);
 
   // Render Metric Detail Modal
@@ -132,35 +240,30 @@ export default function ReportsPage() {
 
     if (selectedMetric === 'bookings') {
       title = 'Bookings Breakdown';
-      const confirmed = data.bookings.filter(b => b.status === 'confirmed').length;
-      const pending = data.bookings.filter(b => b.status === 'pending').length;
-      const cancelled = data.bookings.filter(b => b.status === 'cancelled').length;
-      const rejected = data.bookings.filter(b => b.status === 'rejected').length;
+      const confirmed = filteredBookings.filter(b => b.status === 'confirmed').length;
+      const cancelled = filteredBookings.filter(b => b.status === 'cancelled').length;
+      const rejected = filteredBookings.filter(b => b.status === 'rejected').length;
 
       content = (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="p-3 bg-green-50 rounded-lg border border-green-100">
-              <p className="text-xs text-green-600 font-bold uppercase">Confirmed</p>
+              <p className="text-[10px] text-green-600 font-bold uppercase">Confirmed</p>
               <p className="text-xl font-bold text-green-700">{confirmed}</p>
             </div>
-            <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-100">
-              <p className="text-xs text-yellow-600 font-bold uppercase">Pending</p>
-              <p className="text-xl font-bold text-yellow-700">{pending}</p>
-            </div>
             <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-              <p className="text-xs text-gray-600 font-bold uppercase">Cancelled</p>
+              <p className="text-[10px] text-gray-600 font-bold uppercase">Cancelled</p>
               <p className="text-xl font-bold text-gray-700">{cancelled}</p>
             </div>
             <div className="p-3 bg-red-50 rounded-lg border border-red-100">
-              <p className="text-xs text-red-600 font-bold uppercase">Rejected</p>
+              <p className="text-[10px] text-red-600 font-bold uppercase">Rejected</p>
               <p className="text-xl font-bold text-red-700">{rejected}</p>
             </div>
           </div>
           <div className="mt-4">
             <p className="text-sm font-semibold mb-2">Recent Bookings</p>
             <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
-              {data.bookings.slice(0, 5).map(b => (
+              {filteredBookings.slice(0, 5).map(b => (
                 <div key={b.booking_id} className="flex justify-between items-center p-2 text-sm border-b">
                   <span>{b.room_name || b.room_id}</span>
                   <Badge variant="outline" className="text-[10px]">{b.status}</Badge>
@@ -177,7 +280,7 @@ export default function ReportsPage() {
           <p className="text-sm text-muted-foreground">Showing rooms with at least one confirmed booking.</p>
           <div className="max-h-80 overflow-y-auto space-y-3 pr-2">
             {data.rooms.map(room => {
-              const bookingCount = data.bookings.filter(b => b.catalog_id === room.catalog_id && b.room_id === room.room_id && b.status === 'confirmed').length;
+              const bookingCount = filteredBookings.filter(b => b.catalog_id === room.catalog_id && b.room_id === room.room_id && b.status === 'confirmed').length;
               return (
                 <div key={`${room.catalog_id}-${room.room_id}`} className="space-y-1">
                   <div className="flex justify-between text-xs">
@@ -206,7 +309,7 @@ export default function ReportsPage() {
           </div>
           <p className="text-sm font-semibold">Recent Cancellation Reasons</p>
           <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
-            {data.cancellations.slice(0, 10).map((c, i) => (
+            {filteredCancellations.slice(0, 10).map((c, i) => (
               <div key={i} className="p-3 rounded-lg border bg-muted/30 text-xs">
                 <div className="flex justify-between font-bold mb-1">
                   <span>Booking {c.booking_id}</span>
@@ -223,7 +326,7 @@ export default function ReportsPage() {
       // Sort users by booking count if we can, else just list
       const topUsers = data.users.slice(0, 10).map(u => ({
         ...u,
-        count: data.bookings.filter(b => b.uid === u.uid).length
+        count: filteredBookings.filter(b => b.uid === u.uid).length
       })).sort((a, b) => b.count - a.count);
 
       content = (
@@ -275,17 +378,89 @@ export default function ReportsPage() {
           <p className="text-sm text-muted-foreground mt-1">Generate and export booking analytics</p>
         </div>
         <div className="flex overflow-x-auto pb-1 -mx-4 px-4 sm:mx-0 sm:px-0 gap-2 scrollbar-none">
-          <Button variant="outline" size="sm" className="gap-2 whitespace-nowrap">
-            <Calendar className="w-4 h-4" />
-            Range
-          </Button>
-          <Button variant="outline" size="sm" className="gap-2 whitespace-nowrap">
-            <Filter className="w-4 h-4" />
-            Filter
-          </Button>
-          <Button size="sm" className="gap-2 whitespace-nowrap">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className={`gap-2 whitespace-nowrap ${dateRange ? 'border-primary ring-1 ring-primary/30' : ''}`}>
+                <CalendarIcon className="w-4 h-4" />
+                {dateRange?.from ? (
+                  dateRange.to ? (
+                    <>
+                      {format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}
+                    </>
+                  ) : (
+                    format(dateRange.from, "LLL dd, y")
+                  )
+                ) : (
+                  <span>Pick Range</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                initialFocus
+                mode="range"
+                defaultMonth={dateRange?.from}
+                selected={dateRange}
+                onSelect={setDateRange}
+                numberOfMonths={1}
+              />
+            </PopoverContent>
+          </Popover>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className={`gap-2 whitespace-nowrap ${(statusFilter.length > 0 || roomFilter.length > 0) ? 'border-primary ring-1 ring-primary/30' : ''}`}>
+                <FilterIcon className="w-4 h-4" />
+                Filter {(statusFilter.length + roomFilter.length) > 0 && `(${(statusFilter.length + roomFilter.length)})`}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-4" align="end">
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-bold text-xs uppercase text-muted-foreground mb-2">Status</h4>
+                  <div className="space-y-2">
+                    {['confirmed', 'cancelled', 'rejected'].map(status => (
+                      <div key={status} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`status-${status}`}
+                          checked={statusFilter.includes(status)}
+                          onCheckedChange={(checked) => {
+                            if (checked) setStatusFilter([...statusFilter, status]);
+                            else setStatusFilter(statusFilter.filter(s => s !== status));
+                          }}
+                        />
+                        <label htmlFor={`status-${status}`} className="text-sm capitalize">{status}</label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-bold text-xs uppercase text-muted-foreground mb-2">Rooms</h4>
+                  <div className="max-h-40 overflow-y-auto space-y-2 pr-2">
+                    {data.rooms.map(room => (
+                      <div key={`${room.catalog_id}-${room.room_id}`} className="flex items-center gap-2">
+                        <Checkbox
+                          id={`room-${room.room_id}`}
+                          checked={roomFilter.includes(`${room.catalog_id}-${room.room_id}`)}
+                          onCheckedChange={(checked) => {
+                            const id = `${room.catalog_id}-${room.room_id}`;
+                            if (checked) setRoomFilter([...roomFilter, id]);
+                            else setRoomFilter(roomFilter.filter(r => r !== id));
+                          }}
+                        />
+                        <label htmlFor={`room-${room.room_id}`} className="text-xs truncate">{room.room_name}</label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <Button variant="secondary" size="sm" className="w-full text-xs font-bold" onClick={clearFilters}>Reset Filters</Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          <Button size="sm" className="gap-2 whitespace-nowrap" onClick={() => exportToCSV('All_Bookings', filteredBookings)}>
             <Download className="w-4 h-4" />
-            Export
+            Export ({filteredBookings.length})
           </Button>
         </div>
       </div>
@@ -405,10 +580,10 @@ export default function ReportsPage() {
             { name: 'Cancellations', icon: '❌' },
             { name: 'Dept Summary', icon: '📋' },
           ].map((template) => (
-            <Card key={template.name} className="p-3 lg:p-4 border cursor-pointer hover:shadow-md transition-shadow bg-muted/10 group">
+            <Card key={template.name} className="p-3 lg:p-4 border cursor-pointer hover:shadow-lg hover:border-primary/50 transition-all bg-muted/10 group active:scale-[0.98]" onClick={() => handleGenerateReport(template.name)}>
               <div className="text-xl lg:text-3xl mb-2 group-hover:scale-110 transition-transform">{template.icon}</div>
               <p className="font-bold text-foreground text-[10px] lg:text-sm">{template.name}</p>
-              <Button variant="ghost" size="sm" className="w-full mt-2 h-7 text-[10px] uppercase font-bold tracking-wider">
+              <Button variant="ghost" size="sm" className="w-full mt-2 h-7 text-[10px] uppercase font-bold tracking-wider group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
                 Generate
               </Button>
             </Card>
