@@ -31,10 +31,10 @@ import { NotificationFeed } from '@/components/admin/dashboard/notification-feed
  */
 export default function AdminDashboard() {
   return (
-    <div className="p-6 space-y-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Overview of your conference room booking system</p>
+    <div className="p-4 lg:p-6 space-y-6">
+      <div className="mb-4 lg:mb-6">
+        <h1 className="text-2xl lg:text-3xl font-bold text-foreground">Dashboard</h1>
+        <p className="text-sm text-muted-foreground mt-1">Overview of your system</p>
       </div>
 
       <DashboardAnalytics />

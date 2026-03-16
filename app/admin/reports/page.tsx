@@ -29,13 +29,27 @@ export default function ReportsPage() {
   }>({ bookings: [], users: [], rooms: [], cancellations: [] });
   const [loading, setLoading] = useState(true);
 
+  const loadData = async (isInitial = false) => {
+    if (isInitial) setLoading(true);
+    try {
+      const [bookings, users, rooms, cancellations] = await Promise.all([
+        fetchAllBookings(),
+        fetchAllUsers(),
+        fetchRooms(),
+        fetchCancellations()
+      ]);
+      setData({ bookings, users, rooms, cancellations });
+    } catch (error) {
+      console.error('Failed to refresh data:', error);
+    } finally {
+      if (isInitial) setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    Promise.all([fetchAllBookings(), fetchAllUsers(), fetchRooms(), fetchCancellations()])
-      .then(([bookings, users, rooms, cancellations]) => {
-        setData({ bookings, users, rooms, cancellations });
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    loadData(true);
+    const interval = setInterval(() => loadData(), 30000); // 30s polling
+    return () => clearInterval(interval);
   }, []);
 
   const [selectedMetric, setSelectedMetric] = useState<string | null>(null);
@@ -46,6 +60,68 @@ export default function ReportsPage() {
 
   const roomsWithBookings = new Set(data.bookings.filter(b => b.status === 'confirmed').map(b => `${b.catalog_id}-${b.room_id}`));
   const utilization = data.rooms.length > 0 ? Math.round((roomsWithBookings.size / data.rooms.length) * 100) : 0;
+
+  // Process Dynamic Chart Data
+  const getDepartmentData = () => {
+    const userDeptMap: Record<string, string> = {};
+    data.users.forEach(u => { userDeptMap[u.uid] = u.dept || 'Other'; });
+
+    const deptCounts: Record<string, number> = {};
+    data.bookings.filter(b => b.status === 'confirmed').forEach(b => {
+      const dept = userDeptMap[b.uid] || 'Other';
+      deptCounts[dept] = (deptCounts[dept] || 0) + 1;
+    });
+
+    const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#6b7280'];
+    return Object.entries(deptCounts).map(([name, count], i) => ({
+      name: name === 'undefined' ? 'Other' : name,
+      value: count,
+      color: colors[i % colors.length]
+    })).sort((a, b) => b.value - a.value);
+  };
+
+  const getMonthlyData = () => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const currentYear = new Date().getFullYear();
+
+    const monthlyStats: Record<string, { bookings: number; users: Set<string> }> = {};
+
+    // Get last 6 months
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      const m = months[d.getMonth()];
+      monthlyStats[m] = { bookings: 0, users: new Set() };
+    }
+
+    data.bookings.filter(b => b.status === 'confirmed').forEach(b => {
+      const date = new Date(b.start_date);
+      if (date.getFullYear() === currentYear) {
+        const m = months[date.getMonth()];
+        if (monthlyStats[m]) {
+          monthlyStats[m].bookings++;
+          monthlyStats[m].users.add(b.uid);
+        }
+      }
+    });
+
+    return Object.entries(monthlyStats).map(([month, stats]) => ({
+      month,
+      bookings: stats.bookings,
+      users: stats.users.size
+    }));
+  };
+
+  const departmentUsage = getDepartmentData().length > 0 ? getDepartmentData() : [
+    { name: 'No Data', value: 1, color: '#e5e7eb' }
+  ];
+
+  const monthlyBookings = getMonthlyData();
+
+  const roomPopularity = data.rooms.slice(0, 5).map(room => ({
+    room: room.room_name,
+    bookings: data.bookings.filter(b => b.catalog_id === room.catalog_id && b.room_id === room.room_id && b.status === 'confirmed').length
+  })).sort((a, b) => b.bookings - a.bookings);
 
   // Render Metric Detail Modal
   const renderMetricModal = () => {
@@ -187,25 +263,6 @@ export default function ReportsPage() {
       </div>
     );
   };
-
-  // Restore mock data for charts to fix lint errors
-  const departmentUsage = [
-    { name: 'Engineering', value: 45, color: '#3b82f6' },
-    { name: 'Sales', value: 30, color: '#10b981' },
-    { name: 'Finance', value: 15, color: '#f59e0b' },
-    { name: 'HR', value: 10, color: '#ef4444' },
-  ];
-
-  const monthlyBookings = [
-    { month: 'Jan', bookings: 85, users: 35 },
-    { month: 'Feb', bookings: 95, users: 40 },
-    { month: 'Mar', bookings: 120, users: 55 },
-  ];
-
-  const roomPopularity = data.rooms.slice(0, 5).map(room => ({
-    room: room.room_name,
-    bookings: data.bookings.filter(b => b.catalog_id === room.catalog_id && b.room_id === room.room_id).length
-  })).sort((a, b) => b.bookings - a.bookings);
 
   if (loading) return <div className="p-6 h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
 
