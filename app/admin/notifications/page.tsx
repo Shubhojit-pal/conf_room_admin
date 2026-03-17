@@ -6,14 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Toggle } from '@/components/ui/toggle';
 import { Bell, Mail, MessageSquare, Clock } from 'lucide-react';
+import { useUISound } from '@/hooks/use-ui-sound';
 
-const notificationChannels = [
+const initialNotificationChannels = [
   { id: 'email', name: 'Email', icon: Mail, enabled: true },
   { id: 'slack', name: 'Slack', icon: MessageSquare, enabled: true },
   { id: 'dashboard', name: 'Dashboard', icon: Bell, enabled: true },
 ];
 
-const notificationEvents = [
+const initialNotificationEvents = [
   {
     id: 'booking_created',
     name: 'New Booking',
@@ -52,6 +53,11 @@ const notificationEvents = [
 ];
 
 export default function NotificationsPage() {
+  const { playSuccess, playClick } = useUISound();
+
+  const [channels, setChannels] = useState(initialNotificationChannels);
+  const [events, setEvents] = useState(initialNotificationEvents);
+
   const [emailSettings, setEmailSettings] = useState({
     quietHoursEnabled: true,
     quietHoursStart: '18:00',
@@ -64,6 +70,26 @@ export default function NotificationsPage() {
     configured: true,
   });
 
+  const handleToggleChannel = (id: string) => {
+    playClick();
+    setChannels(prev => prev.map(ch => ch.id === id ? { ...ch, enabled: !ch.enabled } : ch));
+  };
+
+  const handleToggleEvent = (id: string) => {
+    playClick();
+    setEvents(prev => prev.map(ev => ev.id === id ? { ...ev, enabled: !ev.enabled } : ev));
+  };
+
+  const handleSave = (section: string) => {
+    playSuccess();
+    alert(`${section} settings saved successfully!`);
+  };
+
+  const handleAction = (action: string) => {
+    playSuccess();
+    alert(`${action} successful!`);
+  };
+
   return (
     <div className="p-4 lg:p-6 space-y-6">
       <div>
@@ -75,15 +101,15 @@ export default function NotificationsPage() {
       <Card className="p-4 lg:p-6">
         <h3 className="text-base lg:text-lg font-semibold text-foreground mb-4">Active Channels</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
-          {notificationChannels.map((channel) => {
+          {channels.map((channel) => {
             const Icon = channel.icon;
             return (
-              <div key={channel.id} className="flex items-center justify-between p-3 lg:p-4 border border-border rounded-lg bg-muted/20">
+              <div key={channel.id} className={`flex items-center justify-between p-3 lg:p-4 border border-border rounded-lg transition-colors ${channel.enabled ? 'bg-primary/5 border-primary/20' : 'bg-muted/20'}`}>
                 <div className="flex items-center gap-2 lg:gap-3">
-                  <Icon className="w-4 h-4 lg:w-5 lg:h-5 text-foreground" />
+                  <Icon className={`w-4 h-4 lg:w-5 lg:h-5 ${channel.enabled ? 'text-primary' : 'text-foreground'}`} />
                   <span className="text-sm lg:text-base font-medium text-foreground">{channel.name}</span>
                 </div>
-                <Toggle pressed={channel.enabled} onPressedChange={() => {}} className="h-8 px-2 lg:px-4">
+                <Toggle pressed={channel.enabled} onPressedChange={() => handleToggleChannel(channel.id)} className="h-8 px-2 lg:px-4">
                   <span className="text-xs lg:text-sm">{channel.enabled ? 'On' : 'Off'}</span>
                 </Toggle>
               </div>
@@ -164,7 +190,7 @@ export default function NotificationsPage() {
             </select>
           </div>
 
-          <Button className="w-full text-sm h-10">Save Email Settings</Button>
+          <Button className="w-full text-sm h-10" onClick={() => handleSave('Email')}>Save Email Settings</Button>
         </div>
       </Card>
 
@@ -191,10 +217,16 @@ export default function NotificationsPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2">
-            <Button variant="outline" className="flex-1 text-sm h-9">
+            <Button variant="outline" className="flex-1 text-sm h-9" onClick={() => handleSave('Slack Webhook')}>
               Update Webhook
             </Button>
-            <Button variant="outline" className="text-destructive hover:text-destructive text-sm h-9">
+            <Button variant="outline" className="text-destructive hover:text-destructive text-sm h-9" onClick={() => {
+              playClick();
+              if (window.confirm('Are you sure you want to disconnect Slack?')) {
+                setSlackSettings({ ...slackSettings, configured: false, webhookUrl: '' });
+                handleAction('Slack disconnected');
+              }
+            }}>
               Disconnect
             </Button>
           </div>
@@ -208,7 +240,7 @@ export default function NotificationsPage() {
           <div className="p-3 lg:p-4 border border-border rounded-lg bg-muted/10">
             <h4 className="text-sm lg:text-base font-semibold text-foreground mb-1">Google Calendar</h4>
             <p className="text-xs text-muted-foreground mb-4">Sync bookings with Google</p>
-            <Button variant="outline" className="w-full text-xs h-8">
+            <Button variant="outline" className="w-full text-xs h-8" onClick={() => handleAction('Google Calendar integration setup initiated')}>
               Configure
             </Button>
           </div>
@@ -218,7 +250,7 @@ export default function NotificationsPage() {
               <Badge className="bg-green-100 text-green-800 text-[9px] px-1.5 py-0">Connected</Badge>
             </div>
             <p className="text-xs text-muted-foreground mb-4">Sync bookings with Outlook</p>
-            <Button variant="outline" className="w-full text-xs h-8">
+            <Button variant="outline" className="w-full text-xs h-8" onClick={() => handleAction('MS Outlook integration management opened')}>
               Manage
             </Button>
           </div>
@@ -229,14 +261,14 @@ export default function NotificationsPage() {
       <Card className="p-4 lg:p-6">
         <h3 className="text-base lg:text-lg font-semibold text-foreground mb-4">Event Notifications</h3>
         <div className="space-y-3">
-          {notificationEvents.map((event) => (
-            <div key={event.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 lg:p-4 border border-border rounded-lg hover:bg-muted/30 transition-colors gap-4">
+          {events.map((event) => (
+            <div key={event.id} className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 lg:p-4 border border-border rounded-lg transition-colors gap-4 ${event.enabled ? 'hover:bg-muted/50 bg-primary/5 border-primary/10' : 'hover:bg-muted/30 bg-background'}`}>
               <div className="flex-1">
-                <p className="text-sm lg:text-base font-semibold text-foreground">{event.name}</p>
+                <p className={`text-sm lg:text-base font-semibold ${event.enabled ? 'text-foreground' : 'text-muted-foreground'}`}>{event.name}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{event.description}</p>
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {event.channels.map((channel) => (
-                    <Badge key={channel} variant="secondary" className="text-[9px] px-1.5 py-0">
+                    <Badge key={channel} variant="secondary" className={`text-[9px] px-1.5 py-0 ${event.enabled ? 'bg-primary/10 hover:bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'}`}>
                       {channel === 'email' && '📧 Email'}
                       {channel === 'slack' && '💬 Slack'}
                       {channel === 'dashboard' && '🔔 Dash'}
@@ -244,7 +276,7 @@ export default function NotificationsPage() {
                   ))}
                 </div>
               </div>
-              <Toggle pressed={event.enabled} onPressedChange={() => {}} className="h-8 px-3">
+              <Toggle pressed={event.enabled} onPressedChange={() => handleToggleEvent(event.id)} className="h-8 px-3">
                 <span className="text-xs">{event.enabled ? 'On' : 'Off'}</span>
               </Toggle>
             </div>
@@ -256,7 +288,7 @@ export default function NotificationsPage() {
       <Card className="p-4 lg:p-6 bg-blue-50/50 border-blue-100">
         <h3 className="text-base lg:text-lg font-semibold text-blue-900 mb-2">Test Notifications</h3>
         <p className="text-xs lg:text-sm text-blue-700/80 mb-4">Send a test notification to verify your settings</p>
-        <Button className="gap-2 text-sm h-10 w-full sm:w-auto px-6">
+        <Button className="gap-2 text-sm h-10 w-full sm:w-auto px-6" onClick={() => handleAction('Test Email sent')}>
           <Bell className="w-4 h-4" />
           Send Test Email
         </Button>
