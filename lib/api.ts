@@ -107,6 +107,18 @@ const authHeaders = (): HeadersInit => ({
     ...(getAdminToken() ? { Authorization: `Bearer ${getAdminToken()}` } : {}),
 });
 
+// Auto-logout + redirect when token is expired or invalid
+const handleAuthError = (res: Response) => {
+    if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_user');
+        // Redirect to admin login
+        if (typeof window !== 'undefined') {
+            window.location.href = '/';
+        }
+    }
+};
+
 // ── Auth ───────────────────────────────────────────────────
 export const loginAdmin = async (email: string, password: string) => {
     const res = await fetch(`${API_URL}/auth/login`, {
@@ -146,6 +158,7 @@ export const createRoom = async (data: Partial<Room>): Promise<{ message: string
         body: JSON.stringify(data),
     });
     if (!res.ok) {
+        handleAuthError(res);
         const err = await res.json();
         throw new Error(err.error || 'Failed to create room');
     }
@@ -158,6 +171,7 @@ export const deleteRoom = async (catalog_id: string, room_id: string): Promise<{
         headers: authHeaders(),
     });
     if (!res.ok) {
+        handleAuthError(res);
         const err = await res.json();
         throw new Error(err.error || 'Failed to delete room');
     }
@@ -177,6 +191,7 @@ export const uploadRoomImages = async (files: File[]) => {
     });
 
     if (!res.ok) {
+        handleAuthError(res);
         const err = await res.json();
         throw new Error(err.error || 'Failed to upload images');
     }
@@ -190,6 +205,7 @@ export const updateRoom = async (catalog_id: string, room_id: string, data: Part
         body: JSON.stringify(data),
     });
     if (!res.ok) {
+        handleAuthError(res);
         const err = await res.json();
         throw new Error(err.error || 'Failed to update room');
     }

@@ -6,17 +6,24 @@ import { Trash2, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // ─── Element type definitions ────────────────────────────────────────────────
-const ELEMENT_TYPES: { type: RoomLayoutElement['type']; label: string; emoji: string; defaultW: number; defaultH: number }[] = [
-    { type: 'seat',       label: 'Seat / Chair', emoji: '🪑', defaultW: 1, defaultH: 1 },
-    { type: 'table',      label: 'Table',        emoji: '🟫', defaultW: 2, defaultH: 1 },
-    { type: 'screen',     label: 'Screen',       emoji: '📺', defaultW: 3, defaultH: 1 },
-    { type: 'whiteboard', label: 'Whiteboard',   emoji: '🗂️', defaultW: 2, defaultH: 1 },
-    { type: 'podium',     label: 'Podium',       emoji: '🎙️', defaultW: 1, defaultH: 1 },
-    { type: 'door',       label: 'Door',         emoji: '🚪', defaultW: 1, defaultH: 1 },
-    { type: 'plant',      label: 'Plant',        emoji: '🌿', defaultW: 1, defaultH: 1 },
+const ELEMENT_TYPES: {
+    type: RoomLayoutElement['type'];
+    label: string;
+    icon: string;  // single emoji or short text
+    color: string; // bg color class for the cell
+    defaultW: number;
+    defaultH: number;
+}[] = [
+    { type: 'seat',       label: 'Seat',       icon: '🪑', color: 'bg-blue-100 dark:bg-blue-900/40',   defaultW: 1, defaultH: 1 },
+    { type: 'table',      label: 'Table',      icon: '▬',  color: 'bg-amber-100 dark:bg-amber-900/40', defaultW: 2, defaultH: 1 },
+    { type: 'screen',     label: 'Screen',     icon: '📺', color: 'bg-slate-200 dark:bg-slate-700/60', defaultW: 3, defaultH: 1 },
+    { type: 'whiteboard', label: 'Whiteboard', icon: '📋', color: 'bg-green-100 dark:bg-green-900/40', defaultW: 2, defaultH: 1 },
+    { type: 'podium',     label: 'Podium',     icon: '🎤', color: 'bg-purple-100 dark:bg-purple-900/40', defaultW: 1, defaultH: 1 },
+    { type: 'door',       label: 'Door',       icon: '🚪', color: 'bg-orange-100 dark:bg-orange-900/40', defaultW: 1, defaultH: 1 },
+    { type: 'plant',      label: 'Plant',      icon: '🌿', color: 'bg-emerald-100 dark:bg-emerald-900/40', defaultW: 1, defaultH: 1 },
 ];
 
-const EMOJI_MAP: Record<string, string> = Object.fromEntries(ELEMENT_TYPES.map(e => [e.type, e.emoji]));
+const TYPE_MAP = Object.fromEntries(ELEMENT_TYPES.map(e => [e.type, e]));
 
 const DEFAULT_ROWS = 8;
 const DEFAULT_COLS = 12;
@@ -109,7 +116,7 @@ export function RoomLayoutBuilder({ value, onChange }: RoomLayoutBuilderProps) {
                                     : 'border-border bg-background text-muted-foreground hover:border-primary/50 hover:text-foreground'
                             }`}
                         >
-                            <span className="text-base">{et.emoji}</span>
+                        <span className="text-base leading-none">{et.icon}</span>
                             <span className="hidden lg:inline">{et.label}</span>
                         </button>
                     ))}
@@ -147,6 +154,7 @@ export function RoomLayoutBuilder({ value, onChange }: RoomLayoutBuilderProps) {
                     {Array.from({ length: layout.rows }, (_, row) =>
                         Array.from({ length: layout.cols }, (_, col) => {
                             const occupant = cellBackground(col, row);
+                            const def = occupant ? TYPE_MAP[occupant.type] : undefined;
                             const isSelected = occupant?.id === selectedElementId;
                             const isOrigin = occupant ? isOriginCell(occupant, col, row) : false;
 
@@ -156,11 +164,11 @@ export function RoomLayoutBuilder({ value, onChange }: RoomLayoutBuilderProps) {
                                     onClick={() => handleCellClick(col, row)}
                                     className={`
                                         border border-slate-100 dark:border-slate-800 relative flex items-center justify-center cursor-pointer
-                                        transition-all duration-100 select-none text-lg
+                                        transition-all duration-100 select-none text-sm font-bold
                                         ${occupant
                                             ? isSelected
-                                                ? 'bg-primary/20 ring-2 ring-inset ring-primary z-10'
-                                                : 'bg-primary/5 hover:bg-primary/10'
+                                                ? `${def?.color || ''} ring-2 ring-inset ring-primary z-10`
+                                                : `${def?.color || ''} hover:opacity-80`
                                             : 'hover:bg-primary/5'
                                         }
                                     `}
@@ -168,8 +176,8 @@ export function RoomLayoutBuilder({ value, onChange }: RoomLayoutBuilderProps) {
                                     title={occupant ? `${occupant.type} — click to select` : `Place ${selectedTool} here`}
                                 >
                                     {occupant && isOrigin && (
-                                        <span className="leading-none pointer-events-none">
-                                            {EMOJI_MAP[occupant.type]}
+                                        <span className="leading-none pointer-events-none text-base">
+                                            {TYPE_MAP[occupant.type]?.icon || '?'}
                                         </span>
                                     )}
                                 </div>
