@@ -36,6 +36,7 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
         room_id: '',
         room_name: '',
         capacity: 10,
+        room_type: 'Conference Room',
         location: '',
         amenities: '',
         status: 'active',
@@ -57,6 +58,7 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
                 room_id: room.room_id,
                 room_name: room.room_name,
                 capacity: room.capacity,
+                room_type: room.room_type || 'Conference Room',
                 location: room.location || '',
                 amenities: room.amenities || '',
                 status: room.status || 'active',
@@ -182,15 +184,33 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
                         </div>
                     )}
 
-                    <div className="space-y-2">
-                        <label className="text-sm font-semibold text-foreground">Room Name</label>
-                        <input
-                            className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground"
-                            value={formData.room_name}
-                            onChange={e => setFormData({ ...formData, room_name: e.target.value })}
-                            placeholder="e.g. Executive Suite"
-                            required
-                        />
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-foreground">Room Name</label>
+                            <input
+                                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground"
+                                value={formData.room_name}
+                                onChange={e => setFormData({ ...formData, room_name: e.target.value })}
+                                placeholder="e.g. Executive Suite"
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-foreground">Room Type</label>
+                            <select
+                                className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground"
+                                value={formData.room_type}
+                                onChange={e => setFormData({ ...formData, room_type: e.target.value })}
+                                required
+                            >
+                                <option value="Conference Room">Conference Room</option>
+                                <option value="Meeting Room">Meeting Room</option>
+                                <option value="Training Room">Training Room</option>
+                                <option value="Auditorium">Auditorium</option>
+                                <option value="Board Room">Board Room</option>
+                                <option value="Discussion Pod">Discussion Pod</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div className="space-y-3">

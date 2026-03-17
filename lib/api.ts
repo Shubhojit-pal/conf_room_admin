@@ -12,6 +12,7 @@ export interface Room {
     floor_no: number;
     room_number: string;
     availability: string;
+    room_type?: string;
     image_url?: string;
     image_urls?: string[];
     mapLink?: string;
