@@ -15,6 +15,23 @@ export interface Room {
     image_url?: string;
     image_urls?: string[];
     mapLink?: string;
+    layout?: RoomLayout | null;
+}
+
+export interface RoomLayoutElement {
+    id: string;
+    type: 'seat' | 'table' | 'screen' | 'door' | 'plant' | 'podium' | 'whiteboard';
+    x: number; // grid column index
+    y: number; // grid row index
+    w?: number; // width in cells (default 1)
+    h?: number; // height in cells (default 1)
+    label?: string;
+}
+
+export interface RoomLayout {
+    rows: number;
+    cols: number;
+    elements: RoomLayoutElement[];
 }
 
 export interface Booking {

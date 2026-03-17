@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, Upload, ImageIcon, Loader2 } from 'lucide-react';
-import { createRoom, updateRoom, Room, uploadRoomImages } from '@/lib/api';
+import { createRoom, updateRoom, Room, uploadRoomImages, RoomLayout } from '@/lib/api';
 import { getDirectImageUrl } from '@/lib/imageUtils';
+import { RoomLayoutBuilder } from './RoomLayoutBuilder';
 
 interface RoomModalProps {
     onClose: () => void;
@@ -29,6 +30,7 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
     const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+    const [roomLayout, setRoomLayout] = useState<RoomLayout | null>(null);
     const [formData, setFormData] = useState({
         catalog_id: '',
         room_id: '',
@@ -49,6 +51,7 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
         if (room) {
             const amenArr = room.amenities ? room.amenities.split(',').map(a => a.trim()) : [];
             setSelectedAmenities(amenArr);
+            setRoomLayout(room.layout || null);
             setFormData({
                 catalog_id: room.catalog_id,
                 room_id: room.room_id,
@@ -123,7 +126,8 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
             // Join amenities into comma separated string
             const finalData = {
                 ...formData,
-                amenities: selectedAmenities.join(', ')
+                amenities: selectedAmenities.join(', '),
+                layout: roomLayout,
             };
 
             if (isEdit && room) {
@@ -327,6 +331,15 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
                                 </label>
                             ))}
                         </div>
+                    </div>
+
+                    {/* Room Layout Builder */}
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <label className="text-sm font-semibold text-foreground">Room Layout</label>
+                            <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full">Optional — click to place furniture</span>
+                        </div>
+                        <RoomLayoutBuilder value={roomLayout} onChange={setRoomLayout} />
                     </div>
 
                     <div className="flex gap-4 pt-4 border-t border-border">
