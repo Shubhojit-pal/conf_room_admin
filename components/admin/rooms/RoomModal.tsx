@@ -220,30 +220,72 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
                         </div>
 
                         <div className="flex flex-col gap-3">
-                            <div className="flex gap-2">
-                                <div className="flex-1 text-xs text-muted-foreground bg-muted/30 p-2 rounded-lg border border-dashed border-border flex items-center justify-center">
-                                    Upload one or more images for the room gallery
-                                </div>
-                                <div className="relative">
+                            <div className="flex flex-col gap-2">
+                                <div className="flex gap-2">
                                     <input
-                                        type="file"
-                                        id="room-image-upload"
-                                        className="hidden"
-                                        accept="image/*"
-                                        multiple
-                                        onChange={handleFileUpload}
-                                        disabled={uploading}
+                                        type="url"
+                                        id="manual-url-input"
+                                        placeholder="Paste image URL (e.g. from Cloudinary)"
+                                        className="flex-1 px-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground"
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                const val = (e.target as HTMLInputElement).value;
+                                                if (val) {
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        image_urls: [...(prev.image_urls || []), val],
+                                                        image_url: prev.image_urls && prev.image_urls.length ? prev.image_url : val
+                                                    }));
+                                                    (e.target as HTMLInputElement).value = '';
+                                                }
+                                            }
+                                        }}
                                     />
                                     <Button
                                         type="button"
-                                        variant="outline"
-                                        className="h-10 px-3 shrink-0 flex items-center gap-2"
-                                        onClick={() => document.getElementById('room-image-upload')?.click()}
-                                        disabled={uploading}
+                                        variant="secondary"
+                                        className="shrink-0"
+                                        onClick={() => {
+                                            const input = document.getElementById('manual-url-input') as HTMLInputElement;
+                                            if (input && input.value) {
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    image_urls: [...(prev.image_urls || []), input.value],
+                                                    image_url: prev.image_urls && prev.image_urls.length ? prev.image_url : input.value
+                                                }));
+                                                input.value = '';
+                                            }
+                                        }}
                                     >
-                                        {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-                                        <span>Upload Images</span>
+                                        Add URL
                                     </Button>
+                                </div>
+                                <div className="flex gap-2">
+                                    <div className="flex-1 text-xs text-muted-foreground bg-muted/30 p-2 rounded-lg border border-dashed border-border flex items-center justify-center">
+                                        Or upload images directly from your computer
+                                    </div>
+                                    <div className="relative">
+                                        <input
+                                            type="file"
+                                            id="room-image-upload"
+                                            className="hidden"
+                                            accept="image/*"
+                                            multiple
+                                            onChange={handleFileUpload}
+                                            disabled={uploading}
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            className="h-10 px-3 shrink-0 flex items-center gap-2"
+                                            onClick={() => document.getElementById('room-image-upload')?.click()}
+                                            disabled={uploading}
+                                        >
+                                            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                                            <span>Upload Images</span>
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
 
