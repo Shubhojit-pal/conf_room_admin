@@ -112,7 +112,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
           </div>
         </div>
 
-        <Popover>
+        {mounted && <Popover>
           <PopoverTrigger asChild>
             <button className="p-2 hover:bg-muted rounded-lg transition-colors relative">
               <Bell className="w-5 h-5 text-foreground" />
@@ -179,7 +179,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
               </Button>
             </div>
           </PopoverContent>
-        </Popover>
+        </Popover>}
 
         <Button variant="ghost" size="sm" className="gap-2 px-2 lg:px-4" onClick={handleLogout}>
           <LogOut className="w-4 h-4" />

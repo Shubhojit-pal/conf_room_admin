@@ -92,8 +92,14 @@ export default function BookingsPage() {
     const isFullCancel = selectedDates.length === allDatesCount && selectedSlots.length === allSlotsCount;
 
     try {
+      const partial_removals = selectedDates.map(d => ({
+        date: d,
+        slots: selectedSlots.map(s => s.split('-')[0].slice(0, 5) + '-' + s.split('-')[1].slice(0, 5))
+      }));
+
       await cancelBooking(cancellingBooking.booking_id, adminUser.uid, cancelReason, {
         partial: !isFullCancel,
+        partial_removals: partial_removals,
         dates: selectedDates,
         slots: selectedSlots.map(s => ({ from: s.split('-')[0], to: s.split('-')[1] })),
         cancel_fromtime: selectedSlots.length > 0 ? selectedSlots.sort()[0].split('-')[0] : cancellingBooking.start_time,
@@ -241,11 +247,11 @@ export default function BookingsPage() {
                   </td>
                   <td className="p-4 text-xs text-foreground whitespace-nowrap">
                     {b.selected_dates ? (
-                      <div className="flex flex-wrap gap-1 max-w-[100px]">
-                        {b.selected_dates.split(',').sort().slice(0, 2).map(d => (
+                      <div className="flex flex-wrap gap-1 max-w-[150px]" title={b.selected_dates.split(',').map(d => d.trim()).sort().join(', ')}>
+                        {b.selected_dates.split(',').map(d => d.trim()).sort().slice(0, 3).map(d => (
                           <Badge key={d} variant="outline" className="text-[9px] px-1 py-0">{d.slice(5)}</Badge>
                         ))}
-                        {b.selected_dates.split(',').length > 2 && <span className="text-[9px] text-muted-foreground">+{b.selected_dates.split(',').length - 2}</span>}
+                        {b.selected_dates.split(',').length > 3 && <span className="text-[9px] text-muted-foreground">+{b.selected_dates.split(',').length - 3}</span>}
                       </div>
                     ) : (
                       b.start_date?.slice(5, 10)
@@ -253,11 +259,11 @@ export default function BookingsPage() {
                   </td>
                   <td className="p-4 text-xs text-foreground whitespace-nowrap">
                     {b.selected_slots ? (
-                      <div className="flex flex-wrap gap-1 max-w-[80px]">
-                        {b.selected_slots.split(',').sort().slice(0, 1).map(s => (
+                      <div className="flex flex-wrap gap-1 max-w-[150px]" title={b.selected_slots.split(',').map(s => s.trim().split('-')[0].slice(0,5) + '-' + s.trim().split('-')[1].slice(0,5)).join(', ')}>
+                        {b.selected_slots.split(',').map(s => s.trim()).sort().slice(0, 2).map(s => (
                           <Badge key={s} variant="outline" className="text-[9px] px-1 py-0">{s.split('-')[0].slice(0, 5)}</Badge>
                         ))}
-                        {b.selected_slots.split(',').length > 1 && <span className="text-[9px] text-muted-foreground">+{b.selected_slots.split(',').length - 1}</span>}
+                        {b.selected_slots.split(',').length > 2 && <span className="text-[9px] text-muted-foreground">+{b.selected_slots.split(',').length - 2}</span>}
                       </div>
                     ) : (
                       b.start_time?.slice(0, 5)

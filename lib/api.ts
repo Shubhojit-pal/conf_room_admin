@@ -256,6 +256,7 @@ export const cancelBooking = async (
         partial?: boolean;
         slots?: { from: string; to: string }[];
         dates?: string[];
+        partial_removals?: { date: string; slots: string[] }[];
         cancel_fromtime?: string;
         cancel_totime?: string;
     }
@@ -270,6 +271,7 @@ export const cancelBooking = async (
             cancel_date,
             cancel_reason: reason,
             partial: options?.partial || false,
+            partial_removals: options?.partial_removals || undefined,
             slots: options?.slots || [],
             dates: options?.dates || [],
             cancel_fromtime: options?.cancel_fromtime || null,
