@@ -37,7 +37,7 @@ export function RecentBookings() {
 
     if (!confirm('Cancel this booking?')) return;
     try {
-      await cancelBooking(id, adminUser.uid, 'Cancelled by Admin');
+      await cancelBooking(id, adminUser.admin_id, 'Cancelled by Admin');
       playSuccess();
       setBookings(prev => prev.map(b => b.booking_id === id ? { ...b, status: 'cancelled' } : b));
     } catch (e: any) {
@@ -102,7 +102,7 @@ export function RecentBookings() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-lg lg:opacity-0 group-hover:opacity-100 transition-opacity"
                       onClick={() => handleDelete(booking.booking_id, booking.status)}
                     >
                       <Trash2 className="w-4 h-4" />

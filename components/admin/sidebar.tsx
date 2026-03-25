@@ -12,18 +12,24 @@ import {
   Settings,
   BarChart3,
   X,
+  MapPin,
+  ShieldCheck,
 } from 'lucide-react';
-import { fetchAllBookings } from '@/lib/api';
+import { fetchAllBookings, getAdminUser } from '@/lib/api';
 
-const navigationItems = [
-  { label: 'Dashboard', href: '/admin', icon: LayoutGrid },
-  { label: 'Rooms', href: '/admin/rooms', icon: Building2 },
-  { label: 'Users', href: '/admin/users', icon: Users },
-  { label: 'Bookings', href: '/admin/bookings', icon: Calendar },
-  { label: 'Reports', href: '/admin/reports', icon: BarChart3 },
-  { label: 'Notifications', href: '/admin/notifications', icon: Bell },
-  { label: 'Settings', href: '/admin/settings', icon: Settings },
+// All possible nav items — filtered by role in component
+const ALL_NAV_ITEMS = [
+  { label: 'Dashboard',     href: '/admin',                icon: LayoutGrid,  roles: ['location_admin', 'super_admin'] },
+  { label: 'Rooms',         href: '/admin/rooms',          icon: Building2,   roles: ['location_admin', 'super_admin'] },
+  { label: 'Bookings',      href: '/admin/bookings',       icon: Calendar,    roles: ['location_admin', 'super_admin'] },
+  { label: 'Users',         href: '/admin/users',          icon: Users,       roles: ['super_admin'] },
+  { label: 'Reports',       href: '/admin/reports',        icon: BarChart3,   roles: ['super_admin'] },
+  { label: 'Locations',     href: '/admin/locations',      icon: MapPin,      roles: ['super_admin'] },
+  { label: 'Admins',        href: '/admin/admins',         icon: ShieldCheck, roles: ['super_admin'] },
+  { label: 'Notifications', href: '/admin/notifications',  icon: Bell,        roles: ['location_admin', 'super_admin'] },
+  { label: 'Settings',      href: '/admin/settings',       icon: Settings,    roles: ['location_admin', 'super_admin'] },
 ];
+
 
 interface SidebarProps {
   isOpen: boolean;
@@ -33,6 +39,15 @@ interface SidebarProps {
 export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const pathname = usePathname();
   const [activeCount, setActiveCount] = useState<number>(0);
+  const [adminRole, setAdminRole] = useState<string>('location_admin');
+
+  useEffect(() => {
+    const admin = getAdminUser();
+    if (admin?.role) setAdminRole(admin.role);
+  }, []);
+
+  // Filter nav items by current admin's role
+  const navigationItems = ALL_NAV_ITEMS.filter(item => item.roles.includes(adminRole));
 
   useEffect(() => {
     fetchAllBookings()
@@ -59,10 +74,10 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       />
 
       {/* Sidebar Container */}
-      <aside className={`fixed lg:static inset-y-0 left-0 w-72 bg-sidebar border-r border-sidebar-border flex flex-col z-50 transition-all duration-300 ease-in-out lg:translate-x-0 ${
+      <aside className={`fixed lg:static inset-y-0 left-0 w-64 lg:w-72 bg-sidebar border-r border-sidebar-border flex flex-col z-50 transition-all duration-300 ease-in-out lg:translate-x-0 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       }`}>
-        <div className="p-8 flex items-center justify-between">
+        <div className="p-6 lg:p-8 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-sidebar-foreground flex items-center gap-3">
               <div className="p-2 rounded-xl bg-primary shadow-lg shadow-primary/20">

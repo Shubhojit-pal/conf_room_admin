@@ -121,31 +121,31 @@ export default function RoomsPage() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         <Card 
-          className={`p-3 lg:p-4 cursor-pointer transition-all hover:shadow-md hover:border-primary/50 group ${filterStatus === 'all' ? 'ring-2 ring-primary ring-offset-2' : ''}`}
+          className={`p-2.5 lg:p-4 cursor-pointer transition-all hover:shadow-md hover:border-primary/50 group ${filterStatus === 'all' ? 'ring-2 ring-primary ring-offset-2' : ''}`}
           onClick={() => setFilterStatus('all')}
         >
-          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold group-hover:text-primary transition-colors">Total</p>
-          <p className="text-xl lg:text-2xl font-bold text-foreground mt-1">{totalRooms}</p>
+          <p className="text-[9px] lg:text-sm text-muted-foreground uppercase font-bold group-hover:text-primary transition-colors">Total</p>
+          <p className="text-lg lg:text-2xl font-bold text-foreground mt-0.5 lg:mt-1">{totalRooms}</p>
         </Card>
         <Card 
-          className={`p-3 lg:p-4 cursor-pointer transition-all hover:shadow-md hover:border-green-500/50 group ${filterStatus === 'active' ? 'ring-2 ring-green-500 ring-offset-2' : ''}`}
+          className={`p-2.5 lg:p-4 cursor-pointer transition-all hover:shadow-md hover:border-green-500/50 group ${filterStatus === 'active' ? 'ring-2 ring-green-500 ring-offset-2' : ''}`}
           onClick={() => setFilterStatus('active')}
         >
-          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold group-hover:text-green-600 transition-colors">Active</p>
-          <p className="text-xl lg:text-2xl font-bold text-green-600 mt-1">{activeRooms}</p>
+          <p className="text-[9px] lg:text-sm text-muted-foreground uppercase font-bold group-hover:text-green-600 transition-colors">Active</p>
+          <p className="text-lg lg:text-2xl font-bold text-green-600 mt-0.5 lg:mt-1">{activeRooms}</p>
         </Card>
         <Card 
-          className={`p-3 lg:p-4 cursor-pointer transition-all hover:shadow-md hover:border-slate-400/50 group ${filterStatus === 'inactive' ? 'ring-2 ring-slate-400 ring-offset-2' : ''}`}
+          className={`p-2.5 lg:p-4 cursor-pointer transition-all hover:shadow-md hover:border-slate-400/50 group ${filterStatus === 'inactive' ? 'ring-2 ring-slate-400 ring-offset-2' : ''}`}
           onClick={() => setFilterStatus('inactive')}
         >
-          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold group-hover:text-slate-600 transition-colors">Inactive</p>
-          <p className="text-xl lg:text-2xl font-bold text-slate-400 mt-1">{inactiveRooms}</p>
+          <p className="text-[9px] lg:text-sm text-muted-foreground uppercase font-bold group-hover:text-slate-600 transition-colors">Inactive</p>
+          <p className="text-lg lg:text-2xl font-bold text-slate-400 mt-0.5 lg:mt-1">{inactiveRooms}</p>
         </Card>
-        <Card className="p-3 lg:p-4 opacity-80">
-          <p className="text-[10px] lg:text-sm text-muted-foreground uppercase font-semibold">Avg Cap</p>
-          <p className="text-xl lg:text-2xl font-bold text-foreground mt-1">{avgCapacity}</p>
+        <Card className="p-2.5 lg:p-4 opacity-80">
+          <p className="text-[9px] lg:text-sm text-muted-foreground uppercase font-bold">Avg Cap</p>
+          <p className="text-lg lg:text-2xl font-bold text-foreground mt-0.5 lg:mt-1">{avgCapacity}</p>
         </Card>
       </div>
 
@@ -175,9 +175,9 @@ export default function RoomsPage() {
             >
               <div className="p-4 border-b border-border">
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex gap-3">
+                  <div className="flex gap-2 lg:gap-3 items-center min-w-0">
                     {room.image_url && (
-                      <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-lg overflow-hidden border border-border bg-muted shrink-0">
+                      <div className="w-10 h-10 lg:w-16 lg:h-16 rounded-lg overflow-hidden border border-border bg-muted shrink-0 shadow-sm">
                         <img
                           src={getDirectImageUrl(room.image_url)}
                           alt={room.room_name}
@@ -220,12 +220,19 @@ export default function RoomsPage() {
               <div className="p-4 space-y-4 flex-1">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-[10px] text-muted-foreground uppercase font-semibold mb-1">Capacity</p>
-                    <p className="text-lg lg:text-xl font-bold text-foreground whitespace-nowrap">{room.capacity} people</p>
+                    <p className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Capacity</p>
+                    <p className="text-base lg:text-xl font-bold text-foreground whitespace-nowrap">{room.capacity} people</p>
                   </div>
                   <div>
-                    <p className="text-[10px] text-muted-foreground uppercase font-semibold mb-1">Location</p>
-                    <p className="text-xs lg:text-sm font-medium text-foreground truncate">{room.location}</p>
+                    <p className="text-[9px] text-muted-foreground uppercase font-bold mb-0.5">Location</p>
+                    <div className="flex flex-col gap-0.5">
+                      {(room as any).location_id && (
+                        <span className="text-[9px] font-black text-primary bg-primary/10 px-1.5 py-0 rounded w-fit">
+                          {(room as any).location_id}
+                        </span>
+                      )}
+                      <p className="text-[11px] lg:text-sm font-semibold text-foreground truncate">{room.location}</p>
+                    </div>
                   </div>
                 </div>
 

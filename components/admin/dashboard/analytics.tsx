@@ -113,7 +113,7 @@ export function DashboardAnalytics() {
               <div className="absolute top-0 right-0 p-3 opacity-10 transition-opacity group-hover:opacity-20">
                 <Icon className={`w-12 h-12 lg:w-16 lg:h-16 ${metric.color}`} />
               </div>
-              <div className="p-6 relative z-10">
+              <div className="p-4 lg:p-6 relative z-10">
                 <div className="flex items-center gap-3 mb-3">
                   <div className={`p-2 rounded-lg bg-current/10 ${metric.color}`}>
                     <Icon className="w-5 h-5" />
@@ -150,7 +150,7 @@ export function DashboardAnalytics() {
               </div>
             </div>
           </div>
-          <div className="h-[300px] w-full">
+          <div className="h-[250px] lg:h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={last7Days}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
@@ -205,18 +205,18 @@ export function DashboardAnalytics() {
               Top performing rooms
             </div>
           </div>
-          <div className="h-[300px] w-full">
+          <div className="h-[250px] lg:h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={roomUtilizationData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                 <XAxis 
                   dataKey="room" 
                   stroke="var(--muted-foreground)" 
-                  tick={{fontSize: 11}}
+                  tick={{fontSize: 10}}
                   axisLine={false}
                   tickLine={false}
-                  height={50}
-                  interval={0}
+                  height={60}
+                  interval="preserveStartEnd"
                 />
                 <YAxis 
                   stroke="var(--muted-foreground)" 

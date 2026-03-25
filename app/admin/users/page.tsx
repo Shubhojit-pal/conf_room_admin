@@ -124,19 +124,19 @@ export default function UsersPage() {
             <tbody className="divide-y divide-border">
               {filtered.map(u => (
                 <tr key={u.uid} className="hover:bg-muted/30 transition-colors">
-                  <td className="p-4 font-mono text-foreground whitespace-nowrap">{u.uid.slice(0, 8)}</td>
-                  <td className="p-4">
+                  <td className="p-3 lg:p-4 font-mono text-foreground whitespace-nowrap">{u.uid.slice(0, 8)}</td>
+                  <td className="p-3 lg:p-4">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 lg:w-8 lg:h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                         <span className="text-[10px] lg:text-sm font-bold text-primary">{u.name.charAt(0).toUpperCase()}</span>
                       </div>
-                      <span className="font-medium text-foreground whitespace-nowrap">{u.name}</span>
+                      <span className="font-medium text-xs lg:text-sm text-foreground whitespace-nowrap">{u.name}</span>
                     </div>
                   </td>
-                  <td className="p-4 text-muted-foreground whitespace-nowrap">{u.email}</td>
-                  <td className="p-4 text-foreground whitespace-nowrap">{u.dept}</td>
-                  <td className="p-4">
-                    <Badge className={`${getRoleColor(u.userrole_id)} text-[10px] px-2 py-0.5 whitespace-nowrap`}>
+                  <td className="p-3 lg:p-4 text-muted-foreground whitespace-nowrap text-[11px] lg:text-sm">{u.email}</td>
+                  <td className="p-3 lg:p-4 text-foreground whitespace-nowrap text-[11px] lg:text-sm">{u.dept}</td>
+                  <td className="p-3 lg:p-4">
+                    <Badge className={`${getRoleColor(u.userrole_id)} text-[9px] lg:text-[10px] px-1.5 lg:px-2 py-0.5 whitespace-nowrap`}>
                       {u.userrole_id === 'admin' || u.userrole_id === 'ADMIN' ? 'Admin' : 'User'}
                     </Badge>
                   </td>

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { X, Upload, ImageIcon, Loader2 } from 'lucide-react';
-import { createRoom, updateRoom, Room, uploadRoomImages, RoomLayout } from '@/lib/api';
+import { X, Upload, ImageIcon, Loader2, MapPin } from 'lucide-react';
+import { createRoom, updateRoom, Room, uploadRoomImages, RoomLayout, fetchLocations, Location } from '@/lib/api';
 import { getDirectImageUrl } from '@/lib/imageUtils';
 import { RoomLayoutBuilder } from './RoomLayoutBuilder';
 
@@ -31,6 +31,7 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
     const [error, setError] = useState('');
     const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
     const [roomLayout, setRoomLayout] = useState<RoomLayout | null>(null);
+    const [locations, setLocations] = useState<Location[]>([]);
     const [formData, setFormData] = useState({
         catalog_id: '',
         room_id: '',
@@ -38,6 +39,7 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
         capacity: 10,
         room_type: 'Conference Room',
         location: '',
+        location_id: '',
         amenities: '',
         status: 'active',
         floor_no: 1,
@@ -47,6 +49,11 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
         image_urls: [] as string[],
         mapLink: '',
     });
+
+    // Fetch all locations for the dropdown
+    useEffect(() => {
+        fetchLocations().then(setLocations).catch(console.error);
+    }, []);
 
     useEffect(() => {
         if (room) {
@@ -60,6 +67,7 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
                 capacity: room.capacity,
                 room_type: room.room_type || 'Conference Room',
                 location: room.location || '',
+                location_id: (room as any).location_id || '',
                 amenities: room.amenities || '',
                 status: room.status || 'active',
                 floor_no: room.floor_no || 1,
@@ -337,7 +345,7 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm font-semibold text-foreground">Location</label>
+                            <label className="text-sm font-semibold text-foreground">Location Text</label>
                             <input
                                 className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground"
                                 value={formData.location}
@@ -345,6 +353,45 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
                                 placeholder="e.g. Block A, 5th Floor"
                             />
                         </div>
+                    </div>
+
+                    {/* Location from Locations Table */}
+                    <div className="space-y-2">
+                        <label className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                            <MapPin className="w-4 h-4 text-primary" /> Assign Location
+                            <span className="text-[10px] font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full">from Locations table</span>
+                        </label>
+                        <select
+                            className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground"
+                            value={formData.location_id}
+                            onChange={e => {
+                                const selected = locations.find(l => l.location_id === e.target.value);
+                                setFormData(prev => ({
+                                    ...prev,
+                                    location_id: e.target.value,
+                                    // Auto-fill mapLink from location's google_maps_url if empty
+                                    mapLink: prev.mapLink || selected?.google_maps_url || '',
+                                    // Also auto-fill location text if empty
+                                    location: prev.location || selected?.name || '',
+                                }));
+                            }}
+                        >
+                            <option value="">— No location assigned —</option>
+                            {locations.map(loc => (
+                                <option key={loc.location_id} value={loc.location_id}>
+                                    [{loc.location_id}] {loc.name}{loc.city ? ` — ${loc.city}` : ''}
+                                </option>
+                            ))}
+                        </select>
+                        {formData.location_id && (() => {
+                            const sel = locations.find(l => l.location_id === formData.location_id);
+                            return sel ? (
+                                <p className="text-[11px] text-muted-foreground">
+                                    📍 {sel.address || sel.city || sel.name}
+                                    {sel.google_maps_url && <> · <a href={sel.google_maps_url} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">View on Maps ↗</a></>}
+                                </p>
+                            ) : null;
+                        })()}
                     </div>
 
                     <div className="space-y-2">

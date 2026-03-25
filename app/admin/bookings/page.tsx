@@ -97,7 +97,7 @@ export default function BookingsPage() {
         slots: selectedSlots.map(s => s.split('-')[0].slice(0, 5) + '-' + s.split('-')[1].slice(0, 5))
       }));
 
-      await cancelBooking(cancellingBooking.booking_id, adminUser.uid, cancelReason, {
+      await cancelBooking(cancellingBooking.booking_id, adminUser.admin_id, cancelReason, {
         partial: !isFullCancel,
         partial_removals: partial_removals,
         dates: selectedDates,
@@ -203,13 +203,13 @@ export default function BookingsPage() {
             className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
-        <div className="flex overflow-x-auto pb-1 -mx-4 px-4 gap-2 scrollbar-none">
+        <div className="flex overflow-x-auto pb-1 -mx-4 px-4 gap-2 scrollbar-none scroll-smooth">
           {['all', 'confirmed', 'rejected', 'cancelled'].map(s => (
             <Button
               key={s}
               variant={filterStatus === s ? 'default' : 'outline'}
               size="sm"
-              className="text-xs whitespace-nowrap px-3"
+              className="text-xs whitespace-nowrap px-4 py-1.5 h-auto rounded-full"
               onClick={() => setFilterStatus(s)}
             >
               {s.charAt(0).toUpperCase() + s.slice(1)}
