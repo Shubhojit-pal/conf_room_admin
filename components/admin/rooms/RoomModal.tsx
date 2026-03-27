@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, Upload, ImageIcon, Loader2, MapPin } from 'lucide-react';
-import { createRoom, updateRoom, Room, uploadRoomImages, RoomLayout, fetchLocations, Location } from '@/lib/api';
+import { createRoom, updateRoom, Room, uploadRoomImages, uploadRoomPolicy, RoomLayout, fetchLocations, Location } from '@/lib/api';
 import { getDirectImageUrl } from '@/lib/imageUtils';
 import { RoomLayoutBuilder } from './RoomLayoutBuilder';
 
@@ -32,6 +32,7 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
     const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
     const [roomLayout, setRoomLayout] = useState<RoomLayout | null>(null);
     const [locations, setLocations] = useState<Location[]>([]);
+    const [policyPdfUploading, setPolicyPdfUploading] = useState(false);
     const [formData, setFormData] = useState({
         catalog_id: '',
         room_id: '',
@@ -48,6 +49,7 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
         image_url: '',
         image_urls: [] as string[],
         mapLink: '',
+        policy_pdf: '',
     });
 
     // Fetch all locations for the dropdown
@@ -76,6 +78,7 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
                 image_url: room.image_url || '',
                 image_urls: room.image_urls || (room.image_url ? [room.image_url] : []),
                 mapLink: room.mapLink || '',
+                policy_pdf: (room as any).policy_pdf || '',
             });
         }
     }, [room]);
@@ -112,6 +115,21 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
         }
     };
 
+    const handlePolicyUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setPolicyPdfUploading(true);
+        setError('');
+        try {
+            const { pdfUrl } = await uploadRoomPolicy(file);
+            setFormData(prev => ({ ...prev, policy_pdf: pdfUrl }));
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setPolicyPdfUploading(false);
+        }
+    };
+
     const removeImage = (index: number) => {
         setFormData(prev => {
             const newUrls = (prev.image_urls || []).filter((_, i) => i !== index);
@@ -138,6 +156,7 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
                 ...formData,
                 amenities: selectedAmenities.join(', '),
                 layout: roomLayout,
+                policy_pdf: formData.policy_pdf,
             };
 
             if (isEdit && room) {
@@ -211,6 +230,7 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
                                 onChange={e => setFormData({ ...formData, room_type: e.target.value })}
                                 required
                             >
+                                <option value="Seminar Hall">Seminar Hall</option>
                                 <option value="Conference Room">Conference Room</option>
                                 <option value="Meeting Room">Meeting Room</option>
                                 <option value="Training Room">Training Room</option>
@@ -403,6 +423,62 @@ export function RoomModal({ onClose, onSuccess, room }: RoomModalProps) {
                             onChange={e => setFormData({ ...formData, mapLink: e.target.value })}
                             placeholder="https://maps.google.com/?q=..."
                         />
+                    </div>
+
+                    {/* Policy PDF Upload */}
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <label className="text-sm font-semibold text-foreground">Booking Policy PDF</label>
+                            <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full">Optional — upload or paste URL</span>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    className="flex-1 px-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground"
+                                    placeholder="Paste PDF URL (e.g. /uploads/policy.pdf)"
+                                    value={formData.policy_pdf}
+                                    onChange={e => setFormData({ ...formData, policy_pdf: e.target.value })}
+                                />
+                            </div>
+                            <div className="flex gap-2 items-center">
+                                <div className="flex-1 text-xs text-muted-foreground bg-muted/30 p-2 rounded-lg border border-dashed border-border flex items-center justify-center">
+                                    Or upload a PDF from your computer
+                                </div>
+                                <div className="relative">
+                                    <input
+                                        type="file"
+                                        id="room-policy-pdf-upload"
+                                        className="hidden"
+                                        accept="application/pdf"
+                                        onChange={handlePolicyUpload}
+                                        disabled={policyPdfUploading}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="h-10 px-3 shrink-0 flex items-center gap-2"
+                                        onClick={() => document.getElementById('room-policy-pdf-upload')?.click()}
+                                        disabled={policyPdfUploading}
+                                    >
+                                        {policyPdfUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                                        <span>Upload PDF</span>
+                                    </Button>
+                                </div>
+                            </div>
+                            {formData.policy_pdf && (
+                                <div className="flex items-center gap-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                                    <span className="text-xs text-green-700 flex-1 truncate">📄 {formData.policy_pdf}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, policy_pdf: '' })}
+                                        className="text-red-500 hover:text-red-700 text-xs font-medium shrink-0"
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">

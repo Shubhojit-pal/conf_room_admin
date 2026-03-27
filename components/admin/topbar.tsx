@@ -104,7 +104,7 @@ export function TopBar({ onMenuClick }: TopBarProps) {
               {mounted ? (user?.name || 'Admin User') : 'Admin User'}
             </p>
             <p className="text-[10px] text-primary font-semibold uppercase tracking-tighter">
-              Super Admin
+              {mounted && user?.role ? user.role.replace('_', ' ') : 'Super Admin'}
             </p>
           </div>
           <div className="w-10 h-10 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 shadow-inner">

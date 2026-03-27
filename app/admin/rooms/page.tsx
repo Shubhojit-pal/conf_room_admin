@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2 } from 'lucide-react';
-import { fetchRooms, deleteRoom, updateRoom, Room } from '@/lib/api';
+import { fetchRooms, deleteRoom, updateRoom, Room, getAdminUser } from '@/lib/api';
 import { RoomModal } from '@/components/admin/rooms/RoomModal';
 import { getDirectImageUrl } from '@/lib/imageUtils';
 
@@ -17,6 +17,14 @@ export default function RoomsPage() {
   const [selectedRoom, setSelectedRoom] = useState<Room | undefined>(undefined);
   const [togglingIds, setTogglingIds] = useState<Set<string>>(new Set());
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
+  const [showAvgCap, setShowAvgCap] = useState(false);
+
+  useEffect(() => {
+    const admin = getAdminUser();
+    if (admin && admin.role !== 'super_admin') {
+      setShowAvgCap(true);
+    }
+  }, []);
 
   const loadRooms = async () => {
     try {
@@ -143,10 +151,12 @@ export default function RoomsPage() {
           <p className="text-[9px] lg:text-sm text-muted-foreground uppercase font-bold group-hover:text-slate-600 transition-colors">Inactive</p>
           <p className="text-lg lg:text-2xl font-bold text-slate-400 mt-0.5 lg:mt-1">{inactiveRooms}</p>
         </Card>
-        <Card className="p-2.5 lg:p-4 opacity-80">
-          <p className="text-[9px] lg:text-sm text-muted-foreground uppercase font-bold">Avg Cap</p>
-          <p className="text-lg lg:text-2xl font-bold text-foreground mt-0.5 lg:mt-1">{avgCapacity}</p>
-        </Card>
+        {showAvgCap && (
+          <Card className="p-2.5 lg:p-4 opacity-80">
+            <p className="text-[9px] lg:text-sm text-muted-foreground uppercase font-bold">Avg Cap</p>
+            <p className="text-lg lg:text-2xl font-bold text-foreground mt-0.5 lg:mt-1">{avgCapacity}</p>
+          </Card>
+        )}
       </div>
 
       {filterStatus !== 'all' && (

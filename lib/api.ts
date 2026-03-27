@@ -18,6 +18,7 @@ export interface Room {
     image_urls?: string[];
     mapLink?: string;
     layout?: RoomLayout | null;
+    policy_pdf?: string;
 }
 
 export interface RoomLayoutElement {
@@ -219,6 +220,26 @@ export const uploadRoomImages = async (files: File[]) => {
         handleAuthError(res);
         const err = await res.json();
         throw new Error(err.error || 'Failed to upload images');
+    }
+    return res.json();
+};
+
+export const uploadRoomPolicy = async (file: File): Promise<{ pdfUrl: string }> => {
+    const formData = new FormData();
+    formData.append('policy', file);
+
+    const res = await fetch(`${API_URL}/rooms/upload-policy`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('admin_token')}`,
+        },
+        body: formData,
+    });
+
+    if (!res.ok) {
+        handleAuthError(res);
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to upload policy PDF');
     }
     return res.json();
 };
