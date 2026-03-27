@@ -29,6 +29,8 @@ export function TopBar({ onMenuClick }: TopBarProps) {
   const [unreadCount, setUnreadCount] = useState(0);
 
   const loadNotifications = async () => {
+    // Don't attempt to fetch if not authenticated
+    if (!localStorage.getItem('admin_token')) return;
     try {
       const data = await fetchNotifications();
       setNotifications(data);

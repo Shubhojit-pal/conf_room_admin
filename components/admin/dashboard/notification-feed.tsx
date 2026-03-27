@@ -14,6 +14,7 @@ export function NotificationFeed() {
     const [loading, setLoading] = useState(true);
 
     const load = async () => {
+        if (!localStorage.getItem('admin_token')) return;
         try {
             const data = await fetchNotifications();
             // If new notifications arrived, play sound
